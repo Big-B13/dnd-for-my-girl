@@ -1,0 +1,176 @@
+{
+  "rules": {
+    "players": {
+      "$playerId": {
+        ".read": true,
+        ".write": true,
+        "profile": {
+          ".validate": "newData.hasChildren()",
+          "$key": {
+            ".validate": "newData.isString() || newData.isNumber()"
+          }
+        },
+        "campaigns": {
+          "$campaignId": {
+            "progress": {
+              ".validate": "newData.hasChildren()",
+              "node": {
+                ".validate": "newData.isString() && newData.val().length <= 64"
+              },
+              "level": {
+                ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 20"
+              },
+              "pieQuality": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10"
+              },
+              "hp": {
+                ".validate": "newData.isNumber()"
+              },
+              "maxHp": {
+                ".validate": "newData.isNumber()"
+              },
+              "ac": {
+                ".validate": "newData.isNumber()"
+              },
+              "screens": {
+                ".validate": "newData.isNumber() && newData.val() <= 10000"
+              },
+              "updatedAt": {
+                ".validate": "newData.isNumber()"
+              },
+              "startedAt": {
+                ".validate": "newData.isNumber()"
+              },
+              "runId": {
+                ".validate": "newData.isString() && newData.val().length <= 40"
+              },
+              "scene": {
+                ".validate": "newData.hasChildren()",
+                "node": {
+                  ".validate": "newData.isString() && newData.val().length <= 64"
+                },
+                "chapter": {
+                  ".validate": "newData.isString() && newData.val().length <= 80"
+                },
+                "title": {
+                  ".validate": "newData.isString() && newData.val().length <= 120"
+                },
+                "at": {
+                  ".validate": "newData.isNumber()"
+                }
+              }
+            },
+            "character": {
+              ".validate": "newData.hasChildren()",
+              "name": {
+                ".validate": "newData.isString() && newData.val().length <= 60"
+              },
+              "pronouns": {
+                ".validate": "newData.isString() && newData.val().length <= 30"
+              },
+              "species": {
+                ".validate": "newData.isString() && newData.val().length <= 40"
+              },
+              "class": {
+                ".validate": "newData.isString() && newData.val().length <= 40"
+              },
+              "background": {
+                ".validate": "newData.isString() && newData.val().length <= 40"
+              },
+              "level": {
+                ".validate": "newData.isNumber()"
+              },
+              "hp": {
+                ".validate": "newData.isNumber()"
+              },
+              "maxHp": {
+                ".validate": "newData.isNumber()"
+              },
+              "ac": {
+                ".validate": "newData.isNumber()"
+              },
+              "weapon": {
+                ".validate": "newData.isString() && newData.val().length <= 60"
+              },
+              "damage": {
+                ".validate": "newData.isString() && newData.val().length <= 40"
+              },
+              "expertise": {
+                ".validate": "newData.isString()"
+              }
+            },
+            "endings": {
+              "$endingId": {
+                ".validate": "newData.hasChildren() && $endingId.length <= 32",
+                "unlockedAt": {
+                  ".validate": "newData.isNumber()"
+                },
+                "runId": {
+                  ".validate": "newData.isString()"
+                },
+                "pieQuality": {
+                  ".validate": "newData.isNumber()"
+                },
+                "clues": {
+                  ".validate": "newData.isNumber()"
+                },
+                "character": {
+                  ".validate": "newData.isString()"
+                }
+              }
+            },
+            "runs": {
+              "$runId": {
+                ".validate": "newData.hasChildren() && $runId.length <= 40",
+                "startedAt": {
+                  ".validate": "newData.isNumber()"
+                },
+                "endedAt": {
+                  ".validate": "newData.isNumber()"
+                },
+                "ending": {
+                  ".validate": "newData.isString() && newData.val().length <= 32"
+                },
+                "pieQuality": {
+                  ".validate": "newData.isNumber()"
+                },
+                "clues": {
+                  ".validate": "newData.isNumber()"
+                },
+                "level": {
+                  ".validate": "newData.isNumber()"
+                },
+                "species": {
+                  ".validate": "newData.isString()"
+                },
+                "class": {
+                  ".validate": "newData.isString()"
+                },
+                "background": {
+                  ".validate": "newData.isString()"
+                }
+              }
+            },
+            "feed": {
+              "$entryId": {
+                ".validate": "newData.hasChildren() && $entryId.length <= 40",
+                "ts": {
+                  ".validate": "newData.isNumber()"
+                },
+                "kind": {
+                  ".validate": "newData.isString() && newData.val().length <= 16"
+                },
+                "text": {
+                  ".validate": "newData.isString() && newData.val().length <= 400"
+                },
+                "detail": {
+                  ".validate": "newData.hasChildren()"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watching · Grammy's Country Apple Pie</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%80%3C/text%3E%3C/svg%3E">
+<style>
+  #watch{max-width:1000px;margin:0 auto;padding:22px 20px 60px;position:relative;z-index:1}
+  .w-grid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
+  @media (max-width:820px){ .w-grid{grid-template-columns:minmax(0,1fr)} }
+  .panel{
+    background:linear-gradient(170deg,var(--parchment),var(--parchment-3));
+    border:1px solid rgba(138,83,34,.45);border-radius:14px;padding:18px;
+    box-shadow:0 22px 46px -20px var(--shadow), inset 0 0 0 6px rgba(255,255,255,.2);
+  }
+  .panel h3{
+    font-family:var(--sans);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--crust-dark);margin:0 0 10px;display:flex;align-items:center;gap:7px;
+  }
+  .panel h3::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(138,83,34,.4),transparent)}
+  .panel + .panel{margin-top:16px}
+  .big{font-size:1.5rem;line-height:1.2;color:var(--apple-dark);font-weight:700;margin:0}
+  .sub{font-family:var(--sans);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px}
+  .feed{max-height:56vh;overflow-y:auto;display:flex;flex-direction:column;gap:0}
+  .f-item{
+    padding:9px 11px;border-bottom:1px dashed rgba(138,83,34,.25);
+    font-size:.9rem;line-height:1.5;animation:slidein .3s ease both;
+  }
+  @keyframes slidein{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+  .f-item .k{
+    font-family:var(--sans);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;
+    padding:1px 6px;border-radius:10px;margin-right:7px;vertical-align:1px;
+  }
+  .k.roll{background:rgba(95,122,58,.18);color:var(--leaf-dark)}
+  .k.choice{background:rgba(217,164,65,.2);color:#7a5614}
+  .k.ending{background:rgba(179,53,43,.15);color:var(--apple-dark)}
+  .k.scene{background:rgba(107,75,52,.14);color:var(--ink-soft)}
+  .f-item .t{font-family:var(--sans);font-size:.62rem;color:var(--ink-soft);opacity:.8;float:right}
+  .f-item.pass{border-left:3px solid var(--leaf)}
+  .f-item.fail{border-left:3px solid var(--apple)}
+  .bar{height:12px;border-radius:20px;background:rgba(138,83,34,.18);overflow:hidden;border:1px solid rgba(138,83,34,.3)}
+  .bar > div{height:100%;transition:width .6s ease}
+  .idle-note{font-size:.95rem;color:var(--ink-soft);font-style:italic;line-height:1.6}
+  .live{display:inline-flex;align-items:center;gap:7px;font-family:var(--sans);font-size:.66rem;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--leaf-dark)}
+  .live .pulse{width:8px;height:8px;border-radius:50%;background:var(--leaf);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+  .runs{font-size:.85rem;line-height:1.7}
+  .runs .row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed rgba(138,83,34,.22);padding:4px 0}
+</style>
+</head>
+<body>
+<div id="watch">
+  <div class="panel" style="margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="font-size:2rem">👀</div>
+    <div style="flex:1;min-width:200px">
+      <p class="big" id="wTitle">Watching…</p>
+      <p class="sub" id="wSub">Grammy's Country Apple Pie</p>
+    </div>
+    <span class="live" id="wLive"><span class="pulse"></span> live</span>
+  </div>
+
+  <div class="w-grid">
+    <div>
+      <div class="panel">
+        <h3>Her character</h3>
+        <div id="wChar"><p class="idle-note">Waiting for her to create a character…</p></div>
+      </div>
+      <div class="panel">
+        <h3>Progress</h3>
+        <div id="wProg"><p class="idle-note">No adventure in progress yet.</p></div>
+      </div>
+      <div class="panel">
+        <h3>Past runs</h3>
+        <div id="wRuns"><p class="idle-note">None finished yet.</p></div>
+      </div>
+      <div class="panel">
+        <h3>Cloud</h3>
+        <div id="wCloud" class="idle-note">Connecting…</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Live feed</h3>
+      <div class="feed" id="wFeed">
+        <p class="idle-note">Every dice roll and choice she makes will appear here, in real time.
+        Leave this page open on your phone.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-database-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/data.js"></script>
+<script>
+(function () {
+  'use strict';
+  var D = window.DNDData;
+  var S = window.DNDSync;
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (t) { return String(t == null ? '' : t); };
+
+  function ago(ms) {
+    if (!ms) return '';
+    var s = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+    if (s < 5) return 'just now';
+    if (s < 60) return s + 's ago';
+    if (s < 3600) return Math.floor(s / 60) + 'm ago';
+    if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+    return Math.floor(s / 86400) + 'd ago';
+  }
+
+  S.onStatus(function (st) {
+    $('wCloud').innerHTML = st.state === 'online'
+      ? '<span class="live"><span class="pulse"></span> connected</span><br><span style="font-size:.78rem;font-family:var(--sans);opacity:.8">' + esc(st.detail) + '</span>'
+      : st.state === 'error'
+        ? '<strong style="color:var(--apple-dark)">Not connected.</strong><br><span style="font-size:.85rem">' + esc(st.detail) + '</span>'
+        : '<strong>Cloud is off.</strong><br><span style="font-size:.85rem">Open <code>js/firebase-config.js</code> and paste your Firebase config, then reload both pages.</span>';
+  });
+
+  S.init().then(function (st) {
+    if (!S.isOn()) { $('wTitle').textContent = 'Cloud not configured'; return; }
+    $('wTitle').textContent = 'Watching ' + (window.PLAYER_ID || 'her');
+
+    S.watchProfile(function (p) {
+      if (p && p.lastSeenAt) $('wSub').textContent = 'Last seen ' + ago(p.lastSeenAt);
+    });
+
+    S.watch('character', function (c) {
+      if (!c) return;
+      var L = c.look || {};
+      $('wChar').innerHTML =
+        '<p style="margin:0;font-size:1.2rem;font-weight:700;color:var(--apple-dark)">' + esc(c.name) + '</p>' +
+        '<p class="sub">Level ' + esc(c.level) + ' ' + esc(c.species) + ' ' + esc(c.class) + '</p>' +
+        '<p style="font-size:.85rem;margin:8px 0 0;line-height:1.6">' + esc(c.background) +
+        ' · ' + esc(L.hair || '') + ' ' + esc((L.hairStyle || '').toLowerCase()) +
+        ' · ' + esc(L.eyes || '') + ' eyes · ' + esc(L.skin || '') + ' skin</p>' +
+        '<div class="chips" style="margin-top:9px">' +
+          '<span class="chip">HP ' + esc(c.hp) + '/' + esc(c.maxHp) + '</span>' +
+          '<span class="chip">AC ' + esc(c.ac) + '</span>' +
+          '<span class="chip">' + esc(c.weapon) + ' ' + esc(c.damage) + '</span>' +
+        '</div>' +
+        '<div class="chips" style="margin-top:6px">' +
+          (c.skills || []).map(function (k) { return '<span class="chip item">' + esc(k) + '</span>'; }).join('') +
+        '</div>';
+    });
+
+    S.watch('progress', function (p) {
+      if (!p) return;
+      var sc = p.scene || {};
+      var ing = p.ingredients || {};
+      var total = Object.keys(ing).reduce(function (a, k) { return a + (ing[k] || 0); }, 0);
+      $('wProg').innerHTML =
+        '<p style="margin:0;font-weight:700;color:var(--apple-dark)">' + esc(sc.chapter || '') + '</p>' +
+        '<p style="margin:2px 0 10px;font-size:1.05rem">' + esc(sc.title || '—') + '</p>' +
+        '<div style="font-family:var(--sans);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px">Pie quality ' + esc(p.pieQuality || 0) + ' / 10</div>' +
+        '<div class="bar"><div style="width:' + Math.min(100, (p.pieQuality || 0) * 10) + '%;background:linear-gradient(90deg,var(--apple),var(--gold))"></div></div>' +
+        '<div style="font-family:var(--sans);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:12px 0 4px">Ingredients ' + total + ' / 10</div>' +
+        '<div class="bar"><div style="width:' + Math.min(100, total * 10) + '%;background:linear-gradient(90deg,var(--leaf-dark),var(--leaf))"></div></div>' +
+        '<div class="chips" style="margin-top:12px">' +
+          '<span class="chip clue">' + esc((p.clues || []).length) + ' clues</span>' +
+          '<span class="chip">' + esc(p.screens || 0) + ' screens</span>' +
+          '<span class="chip">' + esc((p.stats && p.stats.checks) || 0) + ' checks</span>' +
+          '<span class="chip">' + esc((p.stats && p.stats.crits) || 0) + ' crits</span>' +
+        '</div>' +
+        '<p class="sub" style="margin-top:10px">Updated ' + ago(p.updatedAt) + '</p>';
+    });
+
+    S.watch('runs', function (runs) {
+      var keys = Object.keys(runs || {});
+      if (!keys.length) return;
+      keys.sort(function (a, b) { return (runs[b].endedAt || 0) - (runs[a].endedAt || 0); });
+      $('wRuns').innerHTML = '<div class="runs">' + keys.slice(0, 8).map(function (k) {
+        var r = runs[k];
+        var e = (D.ENDINGS.find(function (x) { return x.id === r.ending; }) || {});
+        return '<div class="row"><span>' + esc(e.icon || '🥧') + ' ' + esc(e.name || r.ending || '?') +
+               '</span><span style="opacity:.75">' + esc(r.pieQuality || 0) + '/10 · ' + ago(r.endedAt) + '</span></div>';
+      }).join('') + '</div>';
+    });
+
+    var first = true;
+    S.watch('feed', function (feed) {
+      var keys = Object.keys(feed || {}).sort();
+      var recent = keys.slice(-60);
+      $('wFeed').innerHTML = recent.length
+        ? recent.map(function (k) {
+            var f = feed[k] || {};
+            var cls = f.kind === 'roll' ? (f.detail && f.detail.pass === false ? 'fail' : 'pass') : '';
+            var d = new Date(f.ts || 0);
+            var hh = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+            return '<div class="f-item ' + cls + '"><span class="t">' + hh + '</span>' +
+                   '<span class="k ' + esc(f.kind || 'scene') + '">' + esc(f.kind || 'scene') + '</span>' +
+                   esc(f.text || '') + '</div>';
+          }).reverse().join('')
+        : '<p class="idle-note">Nothing yet.</p>';
+      if (first) { first = false; }
+    });
+
+    // keep the "last seen" ticker honest
+    setInterval(function () {
+      var pill = $('wSub');
+      if (pill && pill.dataset.ts) pill.textContent = 'Last seen ' + ago(Number(pill.dataset.ts));
+    }, 15000);
+  });
+})();
+</script>
+</body>
+</html>

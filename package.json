@@ -1,0 +1,19 @@
+{
+  "name": "grammys-country-apple-pie",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A one-session D&D adventure in the browser: Grammy's Country Apple Pie.",
+  "scripts": {
+    "start": "python3 -m http.server 8000 --bind 0.0.0.0",
+    "test": "node test.js && node test-ui.js && node test-sync.js",
+    "test:rules": "node test.js",
+    "test:ui": "node test-ui.js",
+    "test:sync": "node test-sync.js",
+    "build": "python3 build.py",
+    "test:rules:emulator": "npx firebase emulators:start --only database --project demo-apple-pie & sleep 8 && node test-rules.js; kill %1"
+  },
+  "devDependencies": {
+    "firebase": "^12.19.0",
+    "jsdom": "^25.0.1"
+  }
+}

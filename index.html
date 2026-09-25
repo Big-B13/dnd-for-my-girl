@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grammy's Country Apple Pie — A D&amp;D Adventure</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%A7%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<div id="app">
+
+  <aside id="sheet" class="sheet" aria-label="Character sheet">
+    <div class="sheet-inner" id="sheetInner"></div>
+  </aside>
+
+  <main id="main">
+    <div id="story" class="story"></div>
+
+    <div id="log" class="log" hidden>
+      <div class="log-head">
+        <span>🎲 Dice Log</span>
+        <button id="logToggle" class="mini-btn" type="button">hide</button>
+      </div>
+      <div id="logBody" class="log-body"></div>
+    </div>
+  </main>
+
+  <button id="sheetToggle" class="sheet-toggle" type="button" aria-label="Toggle character sheet">📜</button>
+</div>
+
+<!-- Firebase Realtime Database (compat build: no bundler, works from a plain file).
+     If these fail to load the game still runs fully offline. -->
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-database-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/sync.js"></script>
+
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/story.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  window.DND.start();
+</script>
+</body>
+</html>
