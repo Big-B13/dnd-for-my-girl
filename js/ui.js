@@ -40,64 +40,17 @@
     if (html != null) n.innerHTML = html;
     return n;
   };
-  /* A little portrait built from her actual appearance choices. */
-  function avatarSVG(a, size) {
-    const skin = a.skinHex || '#eec7a6';
-    const hair = a.hairColorHex || '#6b3f21';
-    const eyes = a.eyeColorHex || '#8a6a34';
-    const style = String(a.hairStyle || '').toLowerCase();
-    const long = /long|braid|waist|bun/.test(style);
-    const short = /short|tousled|shaved/.test(style);
-    const curly = /curl/.test(style);
-    const bun = /bun/.test(style);
-    const mark = a.mark || 'none';
 
-    const back = long
-      ? `<path d="M22 62 q-6 40 4 58 h68 q10 -18 4 -58 z" fill="${hair}"/>`
-      : '';
-    const topShort = short
-      ? `<path d="M26 56 q2 -32 34 -32 q32 0 34 32 q-10 -14 -34 -14 q-24 0 -34 14 z" fill="${hair}"/>`
-      : `<path d="M24 60 q0 -38 36 -38 q36 0 36 38 q-8 -20 -36 -20 q-28 0 -36 20 z" fill="${hair}"/>`;
-    const curls = curly
-      ? `<g fill="${hair}"><circle cx="30" cy="34" r="9"/><circle cx="44" cy="26" r="10"/><circle cx="60" cy="26" r="10"/><circle cx="74" cy="34" r="9"/><circle cx="26" cy="48" r="8"/><circle cx="78" cy="48" r="8"/></g>`
-      : '';
-    const bunTop = bun ? `<circle cx="60" cy="18" r="11" fill="${hair}"/>` : '';
-    const braid = /braid/.test(style)
-      ? `<path d="M78 62 q14 16 8 40 q-2 8 -8 6 q6 -22 -6 -38 z" fill="${hair}"/>`
-      : '';
-
-    const marks = {
-      freckles: `<g fill="#b4713f" opacity=".55"><circle cx="45" cy="66" r="1.3"/><circle cx="50" cy="69" r="1.3"/><circle cx="55" cy="66" r="1.3"/><circle cx="62" cy="69" r="1.3"/><circle cx="67" cy="66" r="1.3"/><circle cx="41" cy="70" r="1.2"/><circle cx="71" cy="70" r="1.2"/></g>`,
-      scar: `<path d="M66 58 q4 6 1 13" stroke="#c98a6a" stroke-width="2" fill="none" stroke-linecap="round"/>`,
-      gap: `<rect x="55" y="79" width="4" height="4" fill="#f6ead2"/>`,
-      tattoo: `<g stroke="#b3352b" stroke-width="1.4" fill="none" opacity=".8"><circle cx="24" cy="86" r="4"/><path d="M24 82 v-4 M20 86 h-3"/></g>`,
-      glasses: `<g stroke="#5c4630" stroke-width="2" fill="none"><circle cx="47" cy="60" r="9"/><circle cx="73" cy="60" r="9"/><path d="M56 60 h8"/></g>`,
-      none: ''
-    };
-
-    return `<svg viewBox="0 0 120 130" width="${size || 96}" height="${(size || 96) * 130 / 120}" role="img" aria-label="character portrait">
-      <ellipse cx="60" cy="118" rx="42" ry="14" fill="rgba(138,83,34,.16)"/>
-      <path d="M28 130 q6 -26 32 -26 q26 0 32 26 z" fill="#7d4b22"/>
-      ${back}${braid}
-      <ellipse cx="60" cy="62" rx="32" ry="36" fill="${skin}"/>
-      <ellipse cx="28" cy="66" rx="5" ry="8" fill="${skin}"/>
-      <ellipse cx="92" cy="66" rx="5" ry="8" fill="${skin}"/>
-      ${topShort}${curls}${bunTop}
-      <ellipse cx="47" cy="60" rx="5" ry="5.6" fill="#fff"/>
-      <ellipse cx="73" cy="60" rx="5" ry="5.6" fill="#fff"/>
-      <circle cx="47.6" cy="60.6" r="3.1" fill="${eyes}"/>
-      <circle cx="73.6" cy="60.6" r="3.1" fill="${eyes}"/>
-      <circle cx="48.6" cy="59.4" r="1.1" fill="#fff"/>
-      <circle cx="74.6" cy="59.4" r="1.1" fill="#fff"/>
-      <path d="M40 50 q7 -4 14 -1" stroke="${hair}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".85"/>
-      <path d="M66 49 q7 -3 14 1" stroke="${hair}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".85"/>
-      <path d="M58 64 q2 8 0 10" stroke="rgba(0,0,0,.18)" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M50 80 q10 7 20 0" stroke="#8a4a3a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-      <ellipse cx="40" cy="72" rx="6" ry="3.6" fill="#d9736a" opacity=".28"/>
-      <ellipse cx="80" cy="72" rx="6" ry="3.6" fill="#d9736a" opacity=".28"/>
-      ${marks[mark] || ''}
-    </svg>`;
+  /* New scenes scroll inside the story pane — the page itself never moves. */
+  function storyToTop() {
+    try {
+      if (typeof $story.scrollTo === 'function') $story.scrollTo({ top: 0, behavior: 'smooth' });
+      else $story.scrollTop = 0;
+    } catch (e) { $story.scrollTop = 0; }
   }
+  /* The portrait now lives in data.js so the watch page can use the same
+     renderer. It reacts to pronouns, species, class and outfit. */
+  const avatarSVG = (a, size) => D.avatarSVG(a, size);
 
   function d20svg(pips) {
     const marks = (pips || []).map(p => `<text x="${p.x}" y="${p.y}" font-size="7" text-anchor="middle" fill="rgba(122,76,32,.55)" font-family="sans-serif">${p.n}</text>`).join('');
@@ -517,7 +470,7 @@
     saveGame();
     const n = S.getNode(id);
     SYNC.saveStoryPosition(id, n && n.chapter, n && n.title);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    storyToTop();
   }
 
   function renderNode(id) {
@@ -583,6 +536,7 @@
   function startCreator() {
     build = {
       name: '', pronouns: 'she/her',
+      height: 'Average', skinTouched: false,
       species: null, class: null, background: null,
       hairStyle: D.HAIR_STYLES[0], hairColor: D.HAIR_COLORS[0], eyeColor: D.EYE_COLORS[0],
       skin: D.SKIN_TONES[1], mark: D.MARKS[0].id, outfit: D.OUTFITS[0].id, trinket: D.TRINKETS[0].id,
@@ -601,6 +555,13 @@
     return h;
   }
 
+  function liveAvatar(c, size) {
+    const wrap = el('div', '');
+    wrap.style.cssText = 'display:flex;justify-content:center;margin:10px 0 4px';
+    wrap.innerHTML = avatarSVG(build, size || 92);
+    c.appendChild(wrap);
+  }
+
   function renderCreator() {
     $story.innerHTML = '';
     $story.classList.remove('scene-fade'); void $story.offsetWidth; $story.classList.add('scene-fade');
@@ -614,7 +575,7 @@
     $story.appendChild(el('div', 'rule'));
     CREATOR[kind]($story);
     renderSheet();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    storyToTop();
   }
 
   const CREATOR_TITLE = {
@@ -656,6 +617,7 @@
   const CREATOR = {
     name(c) {
       c.appendChild(el('p', '', 'Bramblewick is a village where everybody knows everybody, so a name matters. So does how you want to be talked about.'));
+      liveAvatar(c, 92);
       const f1 = el('div', 'field');
       f1.innerHTML = '<label>Your name</label>';
       const i = document.createElement('input');
@@ -690,6 +652,7 @@
 
     species(c) {
       c.appendChild(el('p', '', 'Your species sets your ability score bonuses and gives you traits that open (and close) doors all campaign long.'));
+      liveAvatar(c, 92);
       const grid = cardGrid(c, 'c2');
       D.SPECIES.forEach(sp => {
         const card = el('button', 'card' + (build.species === sp.id ? ' sel' : ''));
@@ -699,7 +662,14 @@
           <div class="desc">${esc(sp.flavor)}</div>
           ${sp.traits.map(t => `<div class="mech"><strong>${esc(t.name)}.</strong> ${esc(t.text)}</div>`).join('')}
           ${sp.extraSkills ? `<div class="mech"><strong>Extra skill.</strong> +1 skill proficiency.</div>` : ''}`;
-        card.onclick = () => { build.species = sp.id; renderCreator(); };
+        card.onclick = () => {
+          build.species = sp.id;
+          if (!build.skinTouched) {
+            const d = D.SKIN_TONES.find(t => t.name === (D.SPECIES_DEFAULT_SKIN[sp.id] || 'Fair'));
+            if (d) build.skin = d;
+          }
+          renderCreator();
+        };
         grid.appendChild(card);
       });
       navBar(c, { ok: () => !!build.species });
@@ -707,6 +677,7 @@
 
     class(c) {
       c.appendChild(el('p', '', 'Your class sets your hit die, your armour, your weapon, and what you can do when the dice go against you.'));
+      liveAvatar(c, 92);
       const grid = cardGrid(c, 'c2');
       D.CLASSES.forEach(cl => {
         const card = el('button', 'card' + (build.class === cl.id ? ' sel' : ''));
@@ -743,26 +714,32 @@
 
       const preview = el('div', '');
       preview.style.cssText = 'display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:rgba(255,255,255,.4);border:1px solid rgba(138,83,34,.3);border-radius:12px;padding:14px 16px';
+      const dragonb = build.species === 'dragonborn';
       const paint = () => {
         preview.innerHTML = avatarSVG(build, 104) +
           `<div style="font-size:.92rem;line-height:1.6"><strong>${esc(build.name || 'Your character')}</strong><br>
-           ${esc(build.hairColor.name)} ${esc(build.hairStyle).toLowerCase()} · ${esc(build.eyeColor.name)} eyes<br>
-           ${esc(build.skin.name)} skin · ${esc((D.MARKS.find(m => m.id === build.mark) || {}).name || '')}</div>`;
+           ${esc(build.hairColor.name)} ${dragonb ? 'crested' : esc(build.hairStyle).toLowerCase()} · ${esc(build.eyeColor.name)} eyes<br>
+           ${esc(build.height)} · ${esc(build.skin.name)} skin · ${esc((D.MARKS.find(m => m.id === build.mark) || {}).name || '')}</div>`;
       };
       paint();
       c.appendChild(preview);
 
-      c.appendChild(el('h2', 'loc', 'Hair'));
-      const hs = el('div', 'swatches');
-      D.HAIR_STYLES.forEach(s => {
-        const b = el('button', 'slot' + (build.hairStyle === s ? ' sel' : ''), esc(s));
-        b.style.width = 'auto';
-        b.onclick = () => { build.hairStyle = s; paint(); syncSwatches(); };
-        hs.appendChild(b);
-      });
-      c.appendChild(hs);
+      if (dragonb) {
+        c.appendChild(el('h2', 'loc', 'No hair — you are a dragon'));
+        c.appendChild(el('p', 'hint', 'Dragonborn have no hair at all. The colour below tints your horns, crest and scale shading instead.'));
+      } else {
+        c.appendChild(el('h2', 'loc', 'Hair'));
+        const hs = el('div', 'swatches');
+        D.HAIR_STYLES.forEach(st => {
+          const b = el('button', 'slot' + (build.hairStyle === st ? ' sel' : ''), esc(st));
+          b.style.width = 'auto';
+          b.onclick = () => { build.hairStyle = st; paint(); syncSwatches(); };
+          hs.appendChild(b);
+        });
+        c.appendChild(hs);
+      }
 
-      c.appendChild(el('h2', 'loc', 'Hair colour'));
+      c.appendChild(el('h2', 'loc', dragonb ? 'Horn & crest colour' : 'Hair colour'));
       const hc = el('div', 'swatches');
       D.HAIR_COLORS.forEach(col => {
         const b = el('button', 'sw' + (build.hairColor.name === col.name ? ' sel' : ''));
@@ -787,10 +764,29 @@
       D.SKIN_TONES.forEach(col => {
         const b = el('button', 'sw' + (build.skin.name === col.name ? ' sel' : ''));
         b.style.background = col.hex; b.title = col.name; b.setAttribute('aria-label', col.name);
-        b.onclick = () => { build.skin = col; paint(); syncSwatches(); };
+        b.onclick = () => { build.skin = col; build.skinTouched = true; paint(); syncSwatches(); };
         sk.appendChild(b);
       });
       c.appendChild(sk);
+
+      c.appendChild(el('h2', 'loc', 'Height'));
+      const HINTS = {
+        halfling: 'Halflings stand about three feet tall. “Taller” is taller for a halfling.',
+        dwarf: 'Dwarves are broad and low — even a tall dwarf tops out around four and a half feet.',
+        dragonborn: 'Dragonborn are big. Even a smaller one looks most people in the eye.',
+        elf: 'Elves run slender and a little taller than humans.',
+        tiefling: 'Tieflings come in about as human-sized as humans do.',
+        human: 'Somewhere between five and six and a half feet.'
+      };
+      c.appendChild(el('p', 'hint', HINTS[build.species] || HINTS.human));
+      const hts = el('div', 'swatches htslots');
+      D.HEIGHTS.forEach(h => {
+        const b = el('button', 'slot' + (build.height === h ? ' sel' : ''), h);
+        b.style.width = 'auto';
+        b.onclick = () => { build.height = h; paint(); syncSwatches(); };
+        hts.appendChild(b);
+      });
+      c.appendChild(hts);
 
       c.appendChild(el('h2', 'loc', 'Something people notice'));
       c.appendChild(el('p', 'hint', 'These are real modifiers. They apply to specific checks all campaign.'));
@@ -820,6 +816,7 @@
           if (t === build.hairColor.name || t === build.eyeColor.name || t === build.skin.name) n.classList.add('sel');
         });
         c.querySelectorAll('.swatches .slot').forEach(n => { if (n.textContent === build.hairStyle) n.classList.add('sel'); });
+        c.querySelectorAll('.htslots .slot').forEach(n => { if (n.textContent === build.height) n.classList.add('sel'); });
         c.querySelectorAll('.card').forEach(n => {
           const t = n.querySelector('.ttl');
           if (t && (t.textContent === (D.MARKS.find(m => m.id === build.mark) || {}).name ||
@@ -936,7 +933,7 @@
       const sp = E.speciesDef(pc.species);
       const bg = E.backgroundDef(pc.background);
       c.appendChild(el('div', 'banner gold', `Level 1 ${sp.name} ${cl.name} · ${bg.name}`));
-      c.appendChild(el('p', '', `<strong>${esc(pc.name)}</strong> (${esc(pc.pronouns)}) — ${esc(pc.hairColor.name)} ${esc(pc.hairStyle).toLowerCase()}, ${esc(pc.eyeColor.name)} eyes, ${esc(pc.skin.name)} skin. ${esc(E.markDef(pc.mark).name)}. Wearing ${esc(E.outfitDef(pc.outfit).name.toLowerCase())}.`));
+      c.appendChild(el('p', '', `<strong>${esc(pc.name)}</strong> (${esc(pc.pronouns)}) — ${esc(pc.hairColor.name)} ${esc(pc.hairStyle).toLowerCase()}, ${esc(pc.eyeColor.name)} eyes, ${esc(String(pc.height || 'Average').toLowerCase())} for a ${esc(pc.speciesName)}, ${esc(pc.skin.name)} skin. ${esc(E.markDef(pc.mark).name)}. Wearing ${esc(E.outfitDef(pc.outfit).name.toLowerCase())}.`));
       c.appendChild(el('p', '', `<strong>HP ${pc.maxHp} · AC ${pc.ac} · Proficiency +${E.profBonus(state)}</strong>`));
       c.appendChild(el('p', '', D.ABILITIES.map(a => `${a.short} <strong>${pc.abilities[a.key]}</strong> (${E.signed(E.mod(pc.abilities[a.key]))})`).join(' &nbsp;·&nbsp; ')));
       c.appendChild(el('p', '', `<strong>Skills:</strong> ${pc.skills.map(s => E.skillName(s)).join(', ')}`));
@@ -996,6 +993,7 @@
     nav.appendChild(b);
     $story.appendChild(nav);
 
+    storyToTop();
     renderSheet();
   }
 

@@ -134,9 +134,13 @@
     S.watch('character', function (c) {
       if (!c) return;
       var L = c.look || {};
+      var av = (window.DNDData && DNDData.avatarSVG)
+        ? DNDData.avatarSVG({ pronouns: c.pronouns, species: c.species, 'class': c.class, look: L }, 76)
+        : '';
       $('wChar').innerHTML =
-        '<p style="margin:0;font-size:1.2rem;font-weight:700;color:var(--apple-dark)">' + esc(c.name) + '</p>' +
-        '<p class="sub">Level ' + esc(c.level) + ' ' + esc(c.species) + ' ' + esc(c.class) + '</p>' +
+        '<div style="display:flex;gap:12px;align-items:center">' + av +
+        '<div><p style="margin:0;font-size:1.2rem;font-weight:700;color:var(--apple-dark)">' + esc(c.name) + '</p>' +
+        '<p class="sub">Level ' + esc(c.level) + ' ' + esc(c.species) + ' ' + esc(c.class) + '</p></div></div>' +
         '<p style="font-size:.85rem;margin:8px 0 0;line-height:1.6">' + esc(c.background) +
         ' · ' + esc(L.hair || '') + ' ' + esc((L.hairStyle || '').toLowerCase()) +
         ' · ' + esc(L.eyes || '') + ' eyes · ' + esc(L.skin || '') + ' skin</p>' +

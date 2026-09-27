@@ -360,6 +360,7 @@
     const pc = {
       name: build.name.trim() || 'Wren',
       pronouns: build.pronouns || 'she/her',
+      height: build.height || 'Average',
       species: sp.id, speciesName: sp.name,
       class: cl.id, className: cl.name,
       background: bg.id, backgroundName: bg.name,

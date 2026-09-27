@@ -55,6 +55,7 @@ const ok = (c, m) => { checks++; if (!c) { fails++; console.log('  ✗ ' + m); }
   const dbRef = require('firebase/compat/database');
   const db0 = firebase.database(firebase.app());
   const before = JSON.stringify((await db0.ref(`players/${SCRATCH}/campaigns/apple-pie/progress`).once('value')).val());
+  const herBefore = JSON.stringify((await db0.ref('players/her/campaigns/apple-pie').once('value')).val());
 
   const watch = fs.readFileSync(path.join(__dirname, 'watch.html'), 'utf8');
   const dom = new JSDOM(watch, { runScripts: 'outside-only', url: 'http://localhost/' });
@@ -87,9 +88,9 @@ const ok = (c, m) => { checks++; if (!c) { fails++; console.log('  ✗ ' + m); }
   const after = await db.ref('players/' + SCRATCH).once('value');
   ok(after.val() === null, 'scratch profile removed — her data untouched');
 
-  // and her profile is still exactly what it was
-  const her = await db.ref('players/her/campaigns/apple-pie/progress').once('value');
-  ok(!!her.val(), 'her real run data is still there: ' + JSON.stringify(her.val()).slice(0, 80));
+  // and her profile is byte-identical to before the test touched anything
+  const herAfter = JSON.stringify((await db.ref('players/her/campaigns/apple-pie').once('value')).val());
+  ok(herAfter === herBefore, 'her real data unchanged by the test (currently: ' + (herBefore === 'null' ? 'empty — she will re-sync from her browser on next save' : herBefore.slice(0, 60)) + ')');
 
   console.log('\n' + '─'.repeat(52));
   console.log(fails === 0

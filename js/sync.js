@@ -189,7 +189,7 @@
       look: {
         hairStyle: pc.hairStyle, hair: pc.hairColorName, eyes: pc.eyeColorName,
         skin: pc.skinName, hairHex: pc.hairColorHex, eyeHex: pc.eyeColorHex, skinHex: pc.skinHex,
-        mark: pc.mark, outfit: pc.outfit, trinket: pc.trinket
+        mark: pc.mark, outfit: pc.outfit, trinket: pc.trinket, height: pc.height
       },
       updatedAt: Date.now()
     });

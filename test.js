@@ -453,6 +453,87 @@ section('12 · security rules lint');
   });
 })();
 
+/* ---------- 13. the reactive portrait ---------- */
+section('13 · avatar reacts to pronouns, species, class and outfit');
+(() => {
+  const A = D.avatarSVG;
+  ok(typeof A === 'function', 'data.js exports avatarSVG');
+  const base = { hairStyle: 'Short & tousled', mark: 'none', outfit: 'cloak' };
+
+  /* pronouns */
+  const she = A({ ...base, pronouns: 'she/her', species: 'human', class: 'rogue' });
+  const he  = A({ ...base, pronouns: 'he/him',  species: 'human', class: 'rogue' });
+  const they = A({ ...base, pronouns: 'they/them', species: 'human', class: 'rogue' });
+  ok(he.includes('data-part="beard"'), 'he/him grows a beard');
+  ok(!she.includes('data-part="beard"'), 'she/her has no beard');
+  ok(!they.includes('data-part="beard"'), 'they/them has no beard');
+  ok(she.includes('data-part="beard"') === false && she.includes('#d9736a'), 'she/her keeps the blush');
+  ok(he.includes('data-part="stubble"'), 'he/him gets stubble');
+  ok(she !== he && he !== they && she !== they, 'all three pronoun portraits differ');
+  ok(he.includes('M20 130') && she.includes('M28 130'), 'masculine build is broader than feminine');
+
+  /* species */
+  const elf = A({ ...base, pronouns: 'she/her', species: 'elf' });
+  const human = A({ ...base, pronouns: 'she/her', species: 'human' });
+  ok(elf.includes('data-part="ears"') && !human.includes('data-part="ears"'), 'elf gets pointed ears, human round ones');
+  const tie = A({ ...base, species: 'tiefling' });
+  ok(tie.includes('data-part="horns"') && tie.includes('data-part="tail"'), 'tiefling gets horns and a tail');
+  ok(tie.includes('data-part="tail-spade"') && tie.includes('data-part="fangs"'), 'tiefling tail ends in a spade and the smile shows fangs');
+  const drag = A({ ...base, species: 'dragonborn' });
+  ok(drag.includes('data-part="snout"') && drag.includes('data-part="crest"'), 'dragonborn gets snout and fin crest');
+  ok(drag.includes('data-part="horns"') && drag.includes('data-part="jaw-spikes"') && drag.includes('data-part="scales"'), 'dragonborn gets swept horns, jaw spikes and scale texture');
+  ok(!drag.includes('data-part="hair-top"'), 'dragonborn has no hair');
+  ok(!A({ ...base, species: 'human', hairStyle: 'Bald & polished' }).includes('data-part="hair-top"'), 'bald means no hair');
+  const dwarfF = A({ ...base, pronouns: 'she/her', species: 'dwarf' });
+  ok(dwarfF.includes('data-part="beard"'), 'dwarves all grow beards, even she/her');
+  ok(dwarfF.includes('data-part="beard-rings"') && dwarfF.includes('data-part="earring"'), 'dwarf beard gets rings and the ear gets a gold hoop');
+  ok(dwarfF.includes('M16 130'), 'dwarves are stocky');
+  ok(A({ ...base, pronouns: 'she/her', species: 'elf' }).includes('data-part="earring"'), 'elves get a dangling earring');
+  const half = A({ ...base, species: 'halfling' });
+  ok(half.includes('scale(0.8)'), 'halfling figure is smaller in the frame');
+  ok(A({ ...base, species: 'halfling', height: 'Taller' }).includes('scale(0.87)'), 'a taller halfling is bigger than an average one');
+  ok(A({ ...base, species: 'human', height: 'Taller' }).includes('scale(1.07)') && A({ ...base, species: 'human', height: 'Smaller' }).includes('scale(0.93)'), 'height choice nudges stature');
+  ok(A({ ...base, species: 'halfling', height: 'Taller' }).includes('scale(0.87)') && !A({ ...base, species: 'halfling', height: 'Taller' }).includes('scale(1'), 'a tall halfling still reads smaller than a human');
+
+  /* class gear */
+  const byClass = id => A({ ...base, pronouns: 'they/them', species: 'human', class: id });
+  ok(byClass('wizard').includes('data-part="hat"'), 'wizard wears the pointy hat');
+  const fig = byClass('fighter');
+  ok(fig.includes('data-part="pauldron"') && fig.includes('data-part="sword"'), 'fighter gets pauldron and sword');
+  const rog = byClass('rogue');
+  ok(rog.includes('data-part="hood"') && rog.includes('data-part="dagger"'), 'rogue gets hood and dagger');
+  const bard = byClass('bard');
+  ok(bard.includes('data-part="cap"') && bard.includes('data-part="lute"') && bard.includes('data-part="notes"'), 'bard gets feathered cap, lute and notes');
+  const cle = byClass('cleric');
+  ok(cle.includes('data-part="amulet"') && cle.includes('data-part="halo"'), 'cleric gets amulet and halo');
+  const ran = byClass('ranger');
+  ok(ran.includes('data-part="bow"') && ran.includes('data-part="hood"'), 'ranger gets bow and half-hood');
+  ok(!byClass('wizard').includes('data-part="bow"'), 'classes do not leak gear into each other');
+
+  /* outfit colours */
+  ok(A({ ...base, outfit: 'apron' }).includes('#d8c49a'), 'apron recolours the torso');
+  ok(A({ ...base, outfit: 'fine' }).includes('#7b2d3f') && A({ ...base, outfit: 'fine' }).includes('data-part="collar"'), 'fine clothes get burgundy + gold collar');
+  ok(A({ ...base, outfit: 'patched' }).includes('data-part="patches"'), 'patched leathers show patches');
+
+  /* the three shapes we pass around must agree */
+  const pcShape = A({ pronouns: 'he/him', species: 'elf', class: 'wizard',
+    hairStyle: 'Long braid', mark: 'glasses', outfit: 'fine',
+    skinHex: '#a06a44', hairColorHex: '#101010', eyeColorHex: '#205030' });
+  const buildShape = A({ pronouns: 'he/him', species: 'elf', class: 'wizard',
+    hairStyle: 'Long braid', mark: 'glasses', outfit: 'fine',
+    skin: { hex: '#a06a44' }, hairColor: { hex: '#101010' }, eyeColor: { hex: '#205030' } });
+  const watchShape = A({ pronouns: 'he/him', species: 'Elf', class: 'Wizard',
+    look: { hairStyle: 'Long braid', mark: 'glasses', outfit: 'fine',
+            skinHex: '#a06a44', hairHex: '#101010', eyeHex: '#205030' } });
+  ok(pcShape === buildShape, 'pc shape and creation-build shape render identically');
+  ok(pcShape === watchShape, 'pc shape and watch-page shape render identically');
+  ok(pcShape.includes('#101010') && pcShape.includes('#a06a44'), 'chosen colours actually land in the portrait');
+
+  /* size + braided beard */
+  ok(A(base, 64).includes('width="64"'), 'size parameter is honoured');
+  ok(A({ ...base, pronouns: 'he/him', hairStyle: 'Long braid' }).includes('data-part="beard"'), 'braided masculine hair grows a long beard');
+})();
+
 /* ---------- summary ---------- */
 console.log('\n' + '─'.repeat(46));
 console.log(fails === 0 ? `✅ ALL PASS — ${checks} assertions` : `❌ ${fails} FAILED of ${checks} assertions`);

@@ -93,7 +93,9 @@ click(qa(d, '.nav .btn').pop());
 ok(storyText(d).includes('How You Look'), 'step 5 is appearance');
 ok(qa(d, '#story svg[aria-label="character portrait"]').length === 1, 'live portrait renders');
 const swatches = qa(d, '.sw');
-ok(swatches.length === 8 + 8 + 8, `24 colour swatches (hair/eyes/skin) — got ${swatches.length}`);
+const Dd0 = w.eval('window.DNDData');
+ok(swatches.length === Dd0.HAIR_COLORS.length + Dd0.EYE_COLORS.length + Dd0.SKIN_TONES.length,
+   `${Dd0.HAIR_COLORS.length + Dd0.EYE_COLORS.length + Dd0.SKIN_TONES.length} colour swatches (hair/eyes/skin) — got ${swatches.length}`);
 click(swatches[5]);  click(swatches[12]); click(swatches[20]);   // change colours
 click(qa(d, '#story .card')[4]);                        // a distinguishing mark
 click(qa(d, '.nav .btn').pop());
