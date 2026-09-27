@@ -1015,8 +1015,9 @@
     if (!pill) {
       pill = el('div', 'cloud-status');
       pill.id = 'cloudStatus';
-      const sheet = document.getElementById('sheet');
-      if (sheet) sheet.parentNode.insertBefore(pill, sheet);
+      // Inside #main — a grid child of #app would steal a column slot.
+      const main = document.getElementById('main');
+      if (main) main.insertBefore(pill, main.firstChild);
       else return;
     }
     return pill;
