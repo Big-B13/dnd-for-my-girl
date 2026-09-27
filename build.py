@@ -21,13 +21,13 @@ def inline(page: str, out_name: str) -> bool:
 
     # 1. stylesheet -> <style>
     def sub_css(m):
-        css = (ROOT / m.group(1)).read_text(encoding="utf-8")
+        css = (ROOT / m.group(1).split("?")[0]).read_text(encoding="utf-8")
         return f"<style>\n{css}\n</style>"
     src, n_css = re.subn(r'<link rel="stylesheet" href="([^"]+)">', sub_css, src)
 
     # 2. local scripts -> inline; CDN scripts untouched
     def sub_js(m):
-        path = m.group(1)
+        path = m.group(1).split("?")[0]
         if path.startswith(("http://", "https://", "//")):
             return m.group(0)
         body = (ROOT / path).read_text(encoding="utf-8")
