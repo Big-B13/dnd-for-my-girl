@@ -358,7 +358,7 @@
     if (cl.id === 'cleric') ac = cl.acBase;   // chain mail ignores Dexterity
 
     const pc = {
-      name: build.name.trim() || 'Wren',
+      name: build.name.trim() || 'Ivo',
       pronouns: build.pronouns || 'she/her',
       height: build.height || 'Average',
       species: sp.id, speciesName: sp.name,
@@ -386,7 +386,7 @@
     };
     state.pc = pc;
     state.level = 1;
-    state.flags.pieScore = 0;
+    state.flags.peaceful = true;
     return pc;
   }
 
@@ -415,30 +415,27 @@
 
   /* ---------------- the pie ---------------- */
   /**
-   * Pie quality 0-10: ingredient quality (0-6) + baking rolls (0-3) + help (0-1)
+   * Pie quality 0-10: what you bring back (ingredients, capped at 6)
+   * + peace kept (2) + the orchard's friendship (dryads 1, Mac 1).
+   * The imp bakes it; your choices decide how good it can be.
    */
   function pieQuality(state) {
     let q = 0;
-    const quals = D.INGREDIENTS.map(i => state.ingredients[i.id] || 0);
-    q += quals.reduce((a, b) => a + b, 0);            // 5 ingredients × max 2 = 10 → capped below
-    q = Math.min(6, q);
-    q += Math.min(3, state.flags.bakingScore || 0);
-    if (state.flags.grammyHelp) q += 1;
+    const bring = ['apples', 'half_office', 'half_apartment', 'spices', 'spellbook'];
+    q += Math.min(6, bring.reduce((a, id) => a + (state.ingredients[id] || 0), 0));
+    if (state.flags.peaceful) q += 2;
+    if (state.flags.dryadFriend) q += 1;
+    if (state.flags.macFriend) q += 1;
     return Math.max(0, Math.min(10, q));
   }
 
   function resolveEnding(state) {
-    const q = pieQuality(state);
-    const allClues = state.clues.length >= 5;
-    const recipe = state.flags.hasRecipe;
-    const pip = state.flags.pipFriend;
-
-    if (allClues && pip && recipe && q >= 8) return 'true';
-    if (recipe && q >= 6) return 'heir';
-    if (q >= 7) return 'champion';
-    if (q >= 4) return 'humble';
-    if (recipe) return 'recipe';
-    return 'burnt';
+    const ing = id => (state.ingredients[id] || 0) > 0;
+    const both = ing('half_office') && ing('half_apartment');
+    if (!both) return 'half';
+    if (state.flags.goblinPact) return 'goblins';
+    if (pieQuality(state) >= 9) return 'perfect';
+    return 'gold';
   }
 
   /* ---------------- persistence (endings gallery) ---------------- */

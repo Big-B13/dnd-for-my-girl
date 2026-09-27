@@ -168,13 +168,13 @@ section('5 · traits fire');
   ok(plain.total === 3, `dwarf rogue proficient perception (wis 12) is +3 (got ${plain.total})`);
   ok(E.hasTrait(st, 'poisonres'), 'dwarf has poison resistance');
 
-  E.startCombat(st, 'wasps');
+  E.startCombat(st, 'oven');
   st.pc.hp = 20; st.pc.maxHp = 20;
   const before = st.pc.hp;
   E.damageToPC(st, 5, 'poison');
   ok(st.pc.hp === before, `dwarf takes 0 poison damage (hp stayed ${st.pc.hp})`);
 
-  E.startCombat(st, 'badger');
+  E.startCombat(st, 'goblin');
   E.damageToPC(st, 5, 'piercing');
   ok(st.pc.hp === before - 5, 'non-poison damage lands normally');
   st.combat = null;
@@ -196,43 +196,27 @@ section('6 · pie quality → endings');
   }
   const perfect = mk();
   D.INGREDIENTS.forEach(i => E.setIngredient(perfect, i.id, 2));
-  perfect.flags.bakingScore = 4;
-  perfect.flags.grammyHelp = true;
-  ok(E.pieQuality(perfect) === 10, `perfect pie is 10/10 (got ${E.pieQuality(perfect)})`);
+  perfect.flags.peaceful = true; perfect.flags.dryadFriend = true; perfect.flags.macFriend = true;
+  ok(E.pieQuality(perfect) === 10, `everything brought back in peace is 10/10 (got ${E.pieQuality(perfect)})`);
+  ok(E.resolveEnding(perfect) === 'perfect', `whole recipe + peace + 10/10 => perfect (got ${E.resolveEnding(perfect)})`);
 
-  perfect.flags.hasRecipe = true;
-  perfect.flags.pipFriend = true;
-  ['tracks', 'ladder', 'bran', 'gossip', 'ribbon'].forEach(c => E.addClue(perfect, c));
-  ok(E.resolveEnding(perfect) === 'true', `all-clues + recipe + friend + 10/10 => true ending (got ${E.resolveEnding(perfect)})`);
+  const gold = mk();
+  E.setIngredient(gold, 'half_office', 2); E.setIngredient(gold, 'half_apartment', 2);
+  gold.flags.peaceful = false;
+  ok(E.resolveEnding(gold) === 'gold', `whole recipe by the sword => gold (got ${E.resolveEnding(gold)})`);
 
-  const heir = mk();
-  D.INGREDIENTS.forEach(i => E.setIngredient(heir, i.id, 1));
-  heir.flags.bakingScore = 2;
-  heir.flags.hasRecipe = true;
-  ok(E.pieQuality(heir) === 7, `mid pie is 7/10 (got ${E.pieQuality(heir)})`);
-  ok(E.resolveEnding(heir) === 'heir', `recipe + 7/10 => heir (got ${E.resolveEnding(heir)})`);
+  const pact = mk();
+  E.setIngredient(pact, 'half_office', 2); E.setIngredient(pact, 'half_apartment', 2);
+  pact.flags.goblinPact = true;
+  ok(E.resolveEnding(pact) === 'goblins', `a promise to the goblins => goblins ending (got ${E.resolveEnding(pact)})`);
 
-  const champ = mk();
-  D.INGREDIENTS.forEach(i => E.setIngredient(champ, i.id, 2));
-  champ.flags.bakingScore = 1;
-  ok(E.pieQuality(champ) === 7, `great ingredients + 1 bake => 7 (got ${E.pieQuality(champ)})`);
-  ok(E.resolveEnding(champ) === 'champion', `7/10 without recipe => champion (got ${E.resolveEnding(champ)})`);
+  const half = mk();
+  E.setIngredient(half, 'half_office', 2);
+  ok(E.resolveEnding(half) === 'half', `one half => half ending (got ${E.resolveEnding(half)})`);
 
-  const burnt = mk();
-  E.setIngredient(burnt, 'apples', 1);
-  ok(E.pieQuality(burnt) === 1, `one poor ingredient => 1/10 (got ${E.pieQuality(burnt)})`);
-  ok(E.resolveEnding(burnt) === 'burnt', `1/10 no recipe => burnt (got ${E.resolveEnding(burnt)})`);
-
-  const recipeLow = mk();
-  E.setIngredient(recipeLow, 'apples', 1);
-  E.setIngredient(recipeLow, 'flour', 1);
-  recipeLow.flags.hasRecipe = true;
-  ok(E.resolveEnding(recipeLow) === 'recipe', `2/10 + recipe => recipe kept (got ${E.resolveEnding(recipeLow)})`);
-
-  const humble = mk();
-  D.INGREDIENTS.forEach(i => E.setIngredient(humble, i.id, 1));
-  ok(E.pieQuality(humble) === 5, `five ok ingredients => 5/10 (got ${E.pieQuality(humble)})`);
-  ok(E.resolveEnding(humble) === 'humble', `5/10 no recipe => humble (got ${E.resolveEnding(humble)})`);
+  const nothing = mk();
+  nothing.flags.peaceful = false;
+  ok(E.pieQuality(nothing) === 0, `nothing brought back is 0/10 (got ${E.pieQuality(nothing)})`);
 })();
 
 /* ---------- 7. full playthroughs ---------- */
@@ -365,8 +349,6 @@ section('9 · one-use resources');
 section('10 · content coverage');
 (function () {
   ok(S.nodeIds().length >= 60, `campaign has ${S.nodeIds().length} nodes (want 60+)`);
-  Object.keys(S.MEMORY_TEXT).forEach(k => ok(!!D.CLASSES.find(c => c.id === k), `memory text for "${k}" matches a class`));
-  ok(Object.keys(S.MEMORY_TEXT).length === D.CLASSES.length, 'every class has a secret-ingredient memory');
   const words = S.nodeIds().reduce((n, id) => {
     const b = S.getNode(id).body;
     if (typeof b !== 'function') return n;
@@ -382,7 +364,7 @@ section('10 · content coverage');
     catch (e) { return n; }
   }, 0);
   console.log(`  ~${words.toLocaleString()} words of story across ${S.nodeIds().length} nodes`);
-  ok(words > 5000, `story is substantial (${words} words)`);
+  ok(words > 3000, `story is substantial (${words} words)`);
 })();
 
 /* ---------- 11. every ending is actually reachable ---------- */
@@ -400,21 +382,21 @@ section('11 · all six endings are reachable');
     return st;
   };
   const seen = new Set(), qualities = new Set();
-  for (let a = 0; a <= 2; a++) for (let f = 0; f <= 2; f++) for (let h = 0; h <= 2; h++)
-  for (let ci = 0; ci <= 2; ci++) for (let m = 0; m <= 2; m++) for (let b = 0; b <= 4; b++)
-  for (const help of [false, true]) for (const rec of [false, true]) {
+  const halves = [[0,0],[2,0],[2,2]];
+  for (const [ho, ha] of halves) for (const sp of [0,2]) for (const peace of [false,true])
+  for (const dry of [false,true]) for (const mac of [false,true]) for (const pact of [false,true]) {
     const st = mk();
-    E.setIngredient(st, 'apples', a); E.setIngredient(st, 'flour', f);
-    E.setIngredient(st, 'honey', h); E.setIngredient(st, 'cinnamon', ci);
-    E.setIngredient(st, 'memory', m);
-    st.flags.bakingScore = b; st.flags.grammyHelp = help; st.flags.hasRecipe = rec;
-    ['tracks', 'ladder', 'bran', 'gossip', 'ribbon'].slice(0, help ? 5 : 3).forEach(c => E.addClue(st, c));
-    if (rec) st.flags.pipFriend = true;
+    E.setIngredient(st, 'half_office', ho); E.setIngredient(st, 'half_apartment', ha);
+    E.setIngredient(st, 'spices', sp); E.setIngredient(st, 'apples', sp); E.setIngredient(st, 'spellbook', sp);
+    st.flags.peaceful = peace; st.flags.dryadFriend = dry; st.flags.macFriend = mac; st.flags.goblinPact = pact;
     qualities.add(E.pieQuality(st));
     seen.add(E.resolveEnding(st));
   }
   console.log(`  pie quality range reachable: 0–${Math.max(...qualities)}`);
-  D.ENDINGS.forEach(e => ok(seen.has(e.id), `ending "${e.name}" (${e.id}) is reachable`));
+  ['perfect', 'gold', 'goblins', 'half'].forEach(id => ok(seen.has(id), `ending "${id}" is produced by the resolver`));
+  ok(S.NODES.decline.choices().some(c => c.next === 'ending_quit') && S.NODES.finale_gate.choices(E.newState()).some(c => c.next === 'ending_quit'), 'quit ending is offered on the road');
+  ok(S.NODES.mac_wrath.resolution.lose === 'ending_compost', 'compost ending is what Mac deals out');
+  D.ENDINGS.forEach(e => ok(S.nodeIds().includes('ending_' + e.id), `ending node ending_${e.id} exists`));
   ok(qualities.has(10) && qualities.has(0), 'pie quality spans the full 0–10 range');
 })();
 

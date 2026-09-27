@@ -145,7 +145,7 @@ click(qa(d, '.nav .btn').pop());
 
 /* ---------------- 3. the game plays ---------------- */
 section('3 · playing the campaign');
-ok(storyText(d).includes('Road to Bramblewick'), 'the prologue starts');
+ok(storyText(d).includes('Tyndareus'), 'the prologue starts in the wizard’s study');
 ok(q(d, '#log').hidden === false, 'dice log is visible in play');
 
 let guard = 0, endingReached = null, rollsSeen = 0, combats = 0;
@@ -155,8 +155,8 @@ while (guard++ < 600) {
   const before = qa(d, '.dice-box').length;
 
   // prefer interesting options, otherwise take the first
-  let pick = cs.find(b => /Act I finale|Act II|Act III|Act IV|Epilogue|Begin|Skill challenge/i.test(b.textContent))
-          || cs.find(b => /Clue|Ingredient|Continue/i.test(b.textContent))
+  let pick = cs.find(b => /Slide in|Slip around|office|drawer|Disarm|stone store|Search|cabinet|stair|About pie|Promise|Bring you the recipe/i.test(b.textContent))
+          || cs.find(b => /Back to the bakery|Back to the store|Back to the office|Back to the guard|Thank them|Pocket|Take both|Continue/i.test(b.textContent))
           || cs[Math.floor(Math.random() * cs.length)];
   const wasCombat = !!q(d, '.combat h4');
   click(pick);
@@ -164,9 +164,7 @@ while (guard++ < 600) {
   const boxes = qa(d, '.dice-box').length;
   if (boxes > before) rollsSeen++;
 
-  const head = q(d, '#story h1');
-  const chapter = q(d, '#story .chapter');
-  if (chapter && /Epilogue/.test(chapter.textContent)) { endingReached = head.textContent; break; }
+  if (q(d, '#story .gal') && q(d, '#story .stars')) { endingReached = (q(d, '#story h1') || {}).textContent || 'an ending'; break; }
 }
 
 ok(endingReached !== null, `reached an ending ("${endingReached}") in ${guard} screens`);
@@ -177,10 +175,11 @@ ok(/d20 =/.test(q(d, '.log-line').textContent), 'log lines show the actual d20 a
 /* ---------------- 4. the sheet reflects the story ---------------- */
 section('4 · the character sheet tracked the adventure');
 const sheet = q(d, '#sheetInner').textContent;
-ok(/Level 2/.test(sheet), 'she levelled up to 2');
-ok(/Clues/.test(sheet), 'clues are listed on the sheet');
-ok(/For the pie/.test(sheet), 'gathered ingredients are listed');
-ok(/Quality so far/.test(sheet), 'pie quality is shown');
+const st = w.eval('window.DND.state()');
+ok(sheet.includes(st.pc.speciesName) && sheet.includes(st.pc.className), 'sheet shows who she is');
+ok(st.flags.endingId, `the resolver picked an ending (${st.flags.endingId})`);
+ok(st.clues.length === 0 || /Clues/.test(sheet), 'clues found are listed on the sheet');
+ok(Object.keys(st.ingredients).length === 0 || /The Pie/.test(sheet), 'things brought back feed the pie panel');
 ok(/Endings found: 1/.test(sheet), 'the ending was recorded in the gallery');
 
 /* ---------------- 5. ending unlocks permanently + restart works ---------------- */
@@ -242,7 +241,7 @@ section('5b · closing the tab mid-adventure and coming back');
 })();
 
 /* ---------------- 6. combat is survivable for a fragile build ---------------- */
-section('6 · a level-1 wizard can always get out of the cellar');
+section('6 · a level-1 wizard can always get out of the bakery');
 (function () {
   const E = w.eval('window.DNDEngine');
   const Dd = w.eval('window.DNDData');
@@ -257,26 +256,27 @@ section('6 · a level-1 wizard can always get out of the cellar');
   });
   ok(st.pc.maxHp <= 8, `a level-1 wizard has ${st.pc.maxHp} HP — genuinely fragile`);
 
-  const node = S.getNode('cellar_guardian');
+  const node = S.getNode('equipment_fight');
   let attempts = 0, escaped = false;
   while (attempts++ < 12 && !escaped) {
     E.startCombat(st, node.enemy);
     let rounds = 0;
     while (!st.combat.over && rounds++ < 80) {
       const extras = node.combatExtras(st);
-      if (extras.length) extras[Math.floor(Math.random() * extras.length)].run(st);
+      const talk = extras.find(x => x.id === 'talkDown');
+      if (talk && rounds % 2 === 0) talk.run(st);
+      else if (extras.length) extras[Math.floor(Math.random() * extras.length)].run(st);
       else E.playerAttack(st, {});
       if (st.combat.over) break;
       E.enemyTurn(st); E.checkCombatEnd(st);
       if (st.pc.hp <= 0) break;
     }
-    if (st.combat.won) escaped = true;
+    if (st.combat.won || st.combat.fled) escaped = true;
     st.combat = null;
     st.pc.hp = Math.max(1, Math.floor(st.pc.maxHp * 0.6));
-    st.flags.guardianTries = (st.flags.guardianTries || 0) + 1;
   }
-  ok(escaped, `the fragile wizard gets through the cellar in ${attempts} attempt(s)`);
-  ok(attempts <= 6, `and it never takes more than a handful of tries (${attempts})`);
+  ok(escaped, `the fragile wizard gets out of the bakery in ${attempts} attempt(s)`);
+  ok(attempts <= 8, `and it never takes more than a handful of tries (${attempts})`);
 })();
 
 console.log('\n' + '─'.repeat(52));

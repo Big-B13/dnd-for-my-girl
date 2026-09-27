@@ -49,7 +49,7 @@
         { id: 'versatile', name: 'Versatile', text: 'You pick up one extra skill proficiency at level 1.' }
       ],
       extraSkills: 1,
-      flavor: 'Bramblewick is mostly humans, which is to say mostly people who have opinions about pastry. Being one of them gets you through doors.'
+      flavor: 'The world is mostly humans, which is to say mostly people who have opinions about pastry. Being one of them gets you through doors.'
     },
     {
       id: 'elf', name: 'Elf', icon: '🧝‍♀️',
@@ -236,7 +236,7 @@
       id: 'hermit', name: 'Hermit', icon: '🌲',
       skills: ['medicine', 'nature'],
       gear: [{ id: 'herbalism_kit', name: 'Herbalism kit', kind: 'gear' }],
-      feature: { id: 'discovery', name: 'Discovery', text: 'You know a secret about Bramblewick that nobody else remembers.' },
+      feature: { id: 'discovery', name: 'Discovery', text: 'You know a secret about the bakery that nobody else remembers.' },
       flavor: 'You lived nine years at the top of the valley and came down for one reason: you smelled cinnamon.'
     }
   ];
@@ -294,37 +294,49 @@
 
   /* ---------- enemies ---------- */
   const ENEMIES = {
-    wasps: {
-      name: 'Wasp Swarm', icon: '🐝', ac: 12, hp: 20, atk: 4, dmg: '1d6', dmgType: 'poison',
-      speed: 30, note: 'Resist its poison and it cannot hurt you at all.'
+    goblin: {
+      name: 'Goblin Patrol', icon: '👺', ac: 15, hp: 7, atk: 4, dmg: '1d6+2', dmgType: 'slashing',
+      speed: 30, note: 'Nimble Escape: it slips away easily. It does not want to die over a bakery.'
     },
-    badger: {
-      name: 'Bramble the Badger', icon: '🦡', ac: 13, hp: 16, atk: 3, dmg: '1d6', dmgType: 'piercing',
-      speed: 25, note: 'She is protecting something. Consider not fighting her.'
+    goblinTrio: {
+      name: 'Goblin Raiders (3)', icon: '👺', ac: 15, hp: 21, atk: 4, dmg: '1d6+2', dmgType: 'slashing',
+      speed: 30, note: 'Three addicts defending their pie supply. They will not instigate — but they will not step aside.'
     },
-    guardian: {
-      name: 'The Cellar Guardian', icon: '🗿', ac: 15, hp: 24, atk: 5, dmg: '1d8', dmgType: 'bludgeoning',
-      speed: 20, note: 'Old stone, older temper. It does not want to be awake — and it gets wearier every time it is woken.'
+    goblinChief: {
+      name: 'The Goblin Chief', icon: '👑', ac: 15, hp: 18, atk: 4, dmg: '1d6+2', dmgType: 'slashing',
+      speed: 30, note: 'Bigger, meaner, and extremely addicted to pie. Two more goblins watch from the wardrobe.'
+    },
+    fungus: {
+      name: 'Violet Fungus', icon: '🍄', ac: 5, hp: 18, atk: 2, dmg: '1d8', dmgType: 'necrotic',
+      speed: 5, note: 'Slow as guilt. It only rots what it touches — you can simply leave.'
+    },
+    mac: {
+      name: 'Mac, the Apple Treant', icon: '🌳', ac: 16, hp: 138, atk: 10, dmg: '3d6+6', dmgType: 'bludgeoning',
+      speed: 20, note: 'He aims to incapacitate, never to kill. You cannot win this fight — run, or make peace.'
+    },
+    oven: {
+      name: 'Oven Dweller', icon: '🔥', ac: 12, hp: 22, atk: 3, dmg: '1d6+1', dmgType: 'fire',
+      speed: 30, note: 'A d4 says magmin, smoke mephit, magma mephit or fire snake. All of them just want to be warm.'
     }
   };
 
   /* ---------- ingredients ---------- */
   const INGREDIENTS = [
-    { id: 'apples', name: 'Apples', icon: '🍎', place: 'orchard' },
-    { id: 'flour', name: 'Flour', icon: '🌾', place: 'mill' },
-    { id: 'honey', name: 'Honey', icon: '🍯', place: 'beehive' },
-    { id: 'cinnamon', name: 'Cinnamon', icon: '🪵', place: 'bakery' },
-    { id: 'memory', name: 'The secret ingredient', icon: '💛', place: 'grammys' }
+    { id: 'apples', name: "Mac's Apples", icon: '🍎', place: 'orchard' },
+    { id: 'half_office', name: 'Half the Recipe (office)', icon: '📜', place: 'office' },
+    { id: 'half_apartment', name: 'Half the Recipe (apartment)', icon: '📜', place: 'apartment' },
+    { id: 'spices', name: 'Exotic Spices', icon: '🪵', place: 'bakery' },
+    { id: 'spellbook', name: "Grammy's Spellbook", icon: '📓', place: 'apartment' }
   ];
 
   /* ---------- endings ---------- */
   const ENDINGS = [
-    { id: 'true', name: 'The Whole Truth', icon: '🥇', rarity: 'Secret ending', desc: 'Every clue found, the thief forgiven, the recipe recovered, and the pie perfect.' },
-    { id: 'heir', name: "Grammy's Heir", icon: '🥧', rarity: 'Best ending', desc: 'Grammy teaches you the recipe, and you are the one who keeps it alive.' },
-    { id: 'champion', name: 'Champion of the Fair', icon: '🏆', rarity: 'Great ending', desc: 'First place blue ribbon. The whole valley tastes it.' },
-    { id: 'humble', name: 'A Humble Slice', icon: '🍂', rarity: 'Good ending', desc: 'Not perfect — but Grammy eats two slices, and that is its own ribbon.' },
-    { id: 'burnt', name: 'Smoke in the Kitchen', icon: '💨', rarity: 'Tough ending', desc: 'The pie failed. The night did not.' },
-    { id: 'recipe', name: 'The Recipe Kept', icon: '📜', rarity: 'Bittersweet ending', desc: 'You learned why the recipe was never written down, and you kept the promise anyway.' }
+    { id: 'perfect', name: 'The Best Pie in the World', icon: '🥇', rarity: 'Secret ending', desc: 'The whole recipe, brought back in peace, with every spice. A thousand gold, a Bag of Tricks, and the pie itself.' },
+    { id: 'gold', name: 'A Thousand Gold', icon: '💰', rarity: 'Great ending', desc: 'The recipe delivered — but not in peace. Paid in full, no bonus, and the goblins have long memories.' },
+    { id: 'goblins', name: 'Pie for Everyone', icon: '🤝', rarity: 'Bittersweet ending', desc: 'You kept your word to the goblins. The wizard has his pie; the bakery has new bakers.' },
+    { id: 'half', name: 'Half a Recipe', icon: '📜', rarity: 'Tough ending', desc: 'One half of the parchment. Tyndareus reads it, sighs, and points at the door: back you go.' },
+    { id: 'quit', name: 'The Pie-Less Fate', icon: '🚪', rarity: 'Quiet ending', desc: 'Some jobs are not worth the road. The old gnome is disappointed, but resigned.' },
+    { id: 'compost', name: 'Compost', icon: '🍂', rarity: 'Bad ending', desc: 'You threatened the orchard. Mac does not kill — he composts.' }
   ];
 
 

@@ -208,11 +208,11 @@
   }
 
   function itemLabel(id) {
-    const map = { torn_recipe: 'Torn recipe card', recipe_bottom: 'The last step', thieves_tools: "Thieves' tools", herbalism_kit: 'Herbalism kit', bakers_tools: 'Baking tools', disguise_kit: 'Disguise kit', temple_letter: 'Temple letter', rank_insignia: 'Rank insignia', rusty_ploughshare: 'Plough piece' };
+    const map = { coins_small: 'Cashbox coins (8 gp, 11 sp, 21 cp)', coins_big: 'Safe coins (75 gp, 50 sp, 25 cp)', signet: 'Silver signet ring (10 gp)', oil: 'Shillelagh oil ×3', staff: 'A tired quarterstaff', potion: 'Healing potions ×2', spices_bag: 'Exotic spices (4 bags)', half_office_done: 'Half the recipe — office', half_apt_done: 'Half the recipe — apartment' };
     return map[id] || id;
   }
   function clueLabel(id) {
-    const map = { tracks: 'Small boot prints', ladder: 'The moved ladder', bran: 'Bran saw someone', mabel: 'Mabel’s confession', gossip: 'The Marsh family', ribbon: 'Blue ribbon', cellar_rumour: 'The root cellar', pip: 'Pip Marsh', card: 'The torn card', lintel: 'The lintel words', fear: 'What Grammy fears' };
+    const map = { mac_hint: 'Mac remembers the dryads', recipe_split: 'The recipe is in two halves', dock_hint: 'The dock is the quiet way in' };
     return map[id] || id;
   }
 
@@ -485,6 +485,12 @@
     if (node.chapter) $story.appendChild(el('div', 'chapter', esc(node.chapter)));
     $story.appendChild(el('h1', '', esc(node.title)));
     $story.appendChild(el('div', 'rule'));
+    if (state.flags.__showRoll && state.lastRoll) {
+      const rn = el('div', '');
+      renderBlocks([{ type: 'rollnote' }], rn);
+      $story.appendChild(rn);
+    }
+    state.flags.__showRoll = false;
 
     const body = typeof node.body === 'function' ? node.body(state) : node.body;
     const bodyWrap = el('div', '');
@@ -513,6 +519,7 @@
       if (ch.check) {
         const r = E.roll(state, ch.check);
         state.lastRoll = r;
+        state.flags.__showRoll = true;
         pushLog(r);
         SYNC.feed('roll', r.logText, {
           check: r.label, d20: r.d20, mod: r.mod, total: r.total,
@@ -616,12 +623,12 @@
 
   const CREATOR = {
     name(c) {
-      c.appendChild(el('p', '', 'Bramblewick is a village where everybody knows everybody, so a name matters. So does how you want to be talked about.'));
+      c.appendChild(el('p', '', 'Six strangers are about to knock on a bakery door, so a name matters. So does how you want to be talked about.'));
       liveAvatar(c, 92);
       const f1 = el('div', 'field');
       f1.innerHTML = '<label>Your name</label>';
       const i = document.createElement('input');
-      i.type = 'text'; i.value = build.name; i.placeholder = 'e.g. Wren Ashdown'; i.maxLength = 28;
+      i.type = 'text'; i.value = build.name; i.placeholder = 'e.g. Ivo Greenapple'; i.maxLength = 28;
       i.oninput = () => { build.name = i.value; };
       f1.appendChild(i);
       c.appendChild(f1);
@@ -928,7 +935,7 @@
 
     review(c) {
       const pc = E.finishCharacter(state, build);
-      c.appendChild(el('p', '', 'Everything you have chosen is real and it all does something. Here is who is walking into Bramblewick.'));
+      c.appendChild(el('p', '', 'Everything you have chosen is real and it all does something. Here is who is walking into the bakery.'));
       const cl = E.classDef(pc.class);
       const sp = E.speciesDef(pc.species);
       const bg = E.backgroundDef(pc.background);
@@ -940,7 +947,7 @@
       c.appendChild(el('p', '', `<strong>Carrying:</strong> ${esc(pc.equipment.join(', '))}, ${esc(D.TRINKETS.find(t => t.id === pc.trinket).name)}`));
       c.appendChild(el('p', 'whisper', sp.flavor));
       c.appendChild(el('p', 'whisper', cl.flavor));
-      navBar(c, { label: '🎲 Walk into Bramblewick', ok: () => true });
+      navBar(c, { label: '🎲 Walk into the bakery', ok: () => true });
     }
   };
 
@@ -963,16 +970,16 @@
 
     $story.appendChild(el('div', 'chapter', 'A one-session Dungeons & Dragons adventure'));
     $story.appendChild(el('h1', '', 'Grammy’s <span class="accent">Country Apple Pie</span>'));
-    $story.appendChild(el('p', 'subtitle', 'Thirty-nine blue ribbons. One empty windowsill. Eight hours until noon.'));
+    $story.appendChild(el('p', 'subtitle', 'One ancient wizard. One ruined bakery. Six ways this ends.'));
     $story.appendChild(el('div', 'rule'));
-    $story.appendChild(el('p', '', 'Bramblewick is a village in a bowl of orchard, and once a year it holds a Harvest Fair, and once a year the same seventy-eight-year-old woman wins the pie competition with the same plain country apple pie with a lattice top.'));
-    $story.appendChild(el('p', '', 'This year, the windowsill is empty. And there is a second problem she has not told anybody about yet: she has forgotten the last step of the recipe, and she never wrote it down, because her husband asked her not to.'));
-    $story.appendChild(el('p', '', 'You have eight hours.'));
+    $story.appendChild(el('p', '', 'When the ancient wizard Tyndareus of Trostenwald develops a craving for a treat from his childhood, he will stop at nothing to get his hands on the best apple pie in the whole world. He hires you to find the bakery that once made it.'));
+    $story.appendChild(el('p', '', 'The bakery has long since been overrun — first by the undead, then by something smaller, louder and greener. The recipe is hidden in two halves. The orchard is watching. And all is not as it seems at Grammy’s Bakery.'));
+    $story.appendChild(el('p', '', 'Every fight is avoidable. Tyndareus isn’t the only one who’d do anything for those pies.'));
 
     const g = el('div', 'grid c3');
     [['🎲', 'Real dice', 'Every check is a genuine d20 + ability modifier + proficiency against a difficulty class. The math is shown to you every time.'],
      ['🧝', 'A real character', 'Species, class, origin, appearance and skills — all of it changes the numbers and opens different options in the story.'],
-     ['🥧', 'Six endings', 'Your clues, your ingredients, your baking rolls and one very important moral choice decide how this ends.']].forEach(([i, t, d]) => {
+     ['🥧', 'Six endings', 'What you bring back, whether you kept the peace, and one very important promise decide how this ends.']].forEach(([i, t, d]) => {
       const card = el('div', 'card', `<div class="ttl"><span class="ico">${i}</span>${t}</div><div class="desc">${d}</div>`);
       card.style.cursor = 'default';
       g.appendChild(card);
