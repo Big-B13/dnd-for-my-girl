@@ -28,7 +28,7 @@
     init: () => Promise.resolve({ state: 'off' }), onStatus: () => NOOP,
     isOn: () => false, status: () => ({ state: 'off', label: 'Cloud off' }),
     saveProgress: NOOP, saveCharacter: NOOP, saveStoryPosition: NOOP,
-    unlockEnding: NOOP, endRun: NOOP, feed: NOOP,
+    unlockEnding: NOOP, endRun: NOOP, feed: NOOP, startRun: NOOP,
     loadEndings: () => Promise.resolve([]), loadProgress: () => Promise.resolve(null)
   };
 
@@ -953,6 +953,7 @@
     state.node = null;
     state.seen = [];
     $log.hidden = false;
+    SYNC.startRun();          // the game — and only the game — stamps a run
     goto('arrival');
   }
 

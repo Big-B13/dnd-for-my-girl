@@ -123,7 +123,7 @@
         : '<strong>Cloud is off.</strong><br><span style="font-size:.85rem">Open <code>js/firebase-config.js</code> and paste your Firebase config, then reload both pages.</span>';
   });
 
-  S.init().then(function (st) {
+  S.init({ watchOnly: true }).then(function (st) {
     if (!S.isOn()) { $('wTitle').textContent = 'Cloud not configured'; return; }
     $('wTitle').textContent = 'Watching ' + (window.PLAYER_ID || 'her');
 

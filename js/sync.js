@@ -149,12 +149,24 @@
       });
     } catch (e) { /* offline is fine */ }
 
+    // Read-only mode is for the watch page: it must NEVER write game state,
+    // or simply opening it would stamp over her save.
+    if (o.watchOnly) return Promise.resolve(status());
+
     STATE.runId = 'r' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
     STATE.runStartedAt = Date.now();
 
-    return write(base() + '/progress', { runId: STATE.runId, startedAt: Date.now() })
-      .then(() => write(`players/${STATE.playerId}/profile`, { lastSeenAt: Date.now() }))
+    return write(`players/${STATE.playerId}/profile`, { lastSeenAt: Date.now() })
       .then(() => status());
+  }
+
+  /* Called by the game (never the watch page) when a fresh run begins.
+     Merges, so it cannot clobber anything a restore wrote. */
+  function startRun() {
+    if (!isOn()) return Promise.resolve(false);
+    STATE.runId = 'r' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+    STATE.runStartedAt = Date.now();
+    return merge(base() + '/progress', { runId: STATE.runId, startedAt: STATE.runStartedAt });
   }
 
   /* =========================================================
@@ -279,7 +291,7 @@
   }
 
   return {
-    init, onStatus, status, isOn,
+    init, onStatus, status, isOn, startRun,
     saveProgress, saveCharacter, saveStoryPosition, unlockEnding, endRun,
     feed, pruneFeed, loadProgress, loadEndings,
     watch, watchProfile, watchCampaigns, clearCloud,

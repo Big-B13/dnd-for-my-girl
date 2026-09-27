@@ -596,12 +596,24 @@ window.FEED_LIMIT = 200;
       });
     } catch (e) { /* offline is fine */ }
 
+    // Read-only mode is for the watch page: it must NEVER write game state,
+    // or simply opening it would stamp over her save.
+    if (o.watchOnly) return Promise.resolve(status());
+
     STATE.runId = 'r' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
     STATE.runStartedAt = Date.now();
 
-    return write(base() + '/progress', { runId: STATE.runId, startedAt: Date.now() })
-      .then(() => write(`players/${STATE.playerId}/profile`, { lastSeenAt: Date.now() }))
+    return write(`players/${STATE.playerId}/profile`, { lastSeenAt: Date.now() })
       .then(() => status());
+  }
+
+  /* Called by the game (never the watch page) when a fresh run begins.
+     Merges, so it cannot clobber anything a restore wrote. */
+  function startRun() {
+    if (!isOn()) return Promise.resolve(false);
+    STATE.runId = 'r' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+    STATE.runStartedAt = Date.now();
+    return merge(base() + '/progress', { runId: STATE.runId, startedAt: STATE.runStartedAt });
   }
 
   /* =========================================================
@@ -726,7 +738,7 @@ window.FEED_LIMIT = 200;
   }
 
   return {
-    init, onStatus, status, isOn,
+    init, onStatus, status, isOn, startRun,
     saveProgress, saveCharacter, saveStoryPosition, unlockEnding, endRun,
     feed, pruneFeed, loadProgress, loadEndings,
     watch, watchProfile, watchCampaigns, clearCloud,
@@ -3626,7 +3638,7 @@ window.FEED_LIMIT = 200;
     init: () => Promise.resolve({ state: 'off' }), onStatus: () => NOOP,
     isOn: () => false, status: () => ({ state: 'off', label: 'Cloud off' }),
     saveProgress: NOOP, saveCharacter: NOOP, saveStoryPosition: NOOP,
-    unlockEnding: NOOP, endRun: NOOP, feed: NOOP,
+    unlockEnding: NOOP, endRun: NOOP, feed: NOOP, startRun: NOOP,
     loadEndings: () => Promise.resolve([]), loadProgress: () => Promise.resolve(null)
   };
 
@@ -4551,6 +4563,7 @@ window.FEED_LIMIT = 200;
     state.node = null;
     state.seen = [];
     $log.hidden = false;
+    SYNC.startRun();          // the game — and only the game — stamps a run
     goto('arrival');
   }
 
