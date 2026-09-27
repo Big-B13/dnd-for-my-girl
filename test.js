@@ -24,8 +24,8 @@ D.CLASSES.forEach(c => {
 });
 D.BACKGROUNDS.forEach(b => b.skills.forEach(k => ok(skillKeys.has(k), `background ${b.id} skill "${k}" exists`)));
 Object.values(D.ENEMIES).forEach(e => ok(e.hp > 0 && e.ac > 0, `enemy ${e.name} is complete`));
-ok(D.ENDINGS.length === 6, 'six endings defined');
-ok(new Set(D.ENDINGS.map(e => e.id)).size === 6, 'ending ids unique');
+ok(D.ENDINGS.length === 7, 'seven endings defined');
+ok(new Set(D.ENDINGS.map(e => e.id)).size === 7, 'ending ids unique');
 
 /* ---------- 2. every node reference resolves ---------- */
 section('2 · node graph integrity');
@@ -214,9 +214,48 @@ section('6 · pie quality → endings');
   E.setIngredient(half, 'half_office', 2);
   ok(E.resolveEnding(half) === 'half', `one half => half ending (got ${E.resolveEnding(half)})`);
 
+  const torn = mk();
+  E.setIngredient(torn, 'half_office', 2); E.setIngredient(torn, 'half_apartment', 2);
+  torn.flags.tornRecipe = true;
+  ok(E.resolveEnding(torn) === 'reopened', `tearing up the recipe => reopened (got ${E.resolveEnding(torn)})`);
+
   const nothing = mk();
   nothing.flags.peaceful = false;
   ok(E.pieQuality(nothing) === 0, `nothing brought back is 0/10 (got ${E.pieQuality(nothing)})`);
+})();
+
+/* ---------- 6b. the living world ---------- */
+section('6b · every action has a reaction');
+(function () {
+  const st = E.newState();
+  ok(!!st.world && Array.isArray(st.world.events), 'new states carry a living world');
+
+  E.remember(st, 'You apologized to the trees.');
+  E.remember(st, 'You apologized to the trees.');
+  ok(st.world.events.length === 1, 'the world does not repeat itself');
+
+  ok(E.mood(st, 'crew') === 0, 'the crew starts neutral');
+  E.befriend(st, 'crew', 2); E.befriend(st, 'crew', 5);
+  ok(E.mood(st, 'crew') === 3, 'friendship tops out at 3');
+  E.anger(st, 'crew', 10);
+  ok(E.mood(st, 'crew') === -3, 'hatred bottoms out at -3');
+
+  const st2 = E.newState();
+  E.noise(st2, 2, 'You battered the front doors.');
+  ok(!st2.flags.wary, 'quiet trouble stays quiet');
+  E.noise(st2, 1, 'You smashed a cashbox.');
+  ok(st2.flags.wary, 'noise 3 makes the goblins wary');
+  E.noise(st2, 3, 'There was a fight on the bakery floor.');
+  ok(st2.flags.hunting, 'noise 6 sends the bakery hunting');
+
+  const st3 = E.newState();
+  ok(st3.flags.peaceful === undefined || st3.flags.peaceful !== false, 'nobody has died yet');
+  E.killed(st3, 2, 'the dock patrol');
+  ok(st3.world.dead === 2, 'the dead are counted');
+  ok(st3.flags.peaceful === false, 'killing breaks the peace');
+  ok(E.bloodPenalty(st3) === 4, 'two bodies put +4 on every negotiation');
+  ok(E.bloodPenalty((() => { const x = E.newState(); E.killed(x, 9); return x; })()) === 6, 'blood penalty caps at +6');
+  ok(st3.world.events.some(e => /remember this/.test(e)), 'killing is written into the world’s memory');
 })();
 
 /* ---------- 7. full playthroughs ---------- */
@@ -368,7 +407,7 @@ section('10 · content coverage');
 })();
 
 /* ---------- 11. every ending is actually reachable ---------- */
-section('11 · all six endings are reachable');
+section('11 · all seven endings are reachable');
 (function () {
   const mk = () => {
     const st = E.newState();

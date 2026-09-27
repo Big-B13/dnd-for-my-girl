@@ -41,7 +41,8 @@
       seen: [],           // visited node ids
       endings: [],        // unlocked ending ids (persisted)
       combat: null,
-      stats: { checks: 0, passed: 0, crits: 0, fumbles: 0 }
+      stats: { checks: 0, passed: 0, crits: 0, fumbles: 0 },
+      world: { noise: 0, dead: 0, turns: 0, events: [], npcs: {} }
     };
   }
 
@@ -413,6 +414,48 @@
   }
   function ingredientCount(state) { return Object.keys(state.ingredients).length; }
 
+  /* ---------------- the living world ----------------
+     Every action leaves a mark: noise, bodies, friendships,
+     and a log the bakery itself remembers. */
+  function remember(state, text) {
+    if (!state.world) state.world = { noise: 0, dead: 0, turns: 0, events: [], npcs: {} };
+    const w = state.world;
+    if (!w.events.includes(text)) w.events.push(text);
+    if (w.events.length > 30) w.events.shift();
+    return text;
+  }
+  function noise(state, n, why) {
+    const w = state.world;
+    w.noise += n;
+    if (why) remember(state, why);
+    if (w.noise >= 6 && !state.flags.hunting) {
+      state.flags.hunting = true;
+      remember(state, 'The bakery is hunting for you. Patrols sweep every room.');
+    } else if (w.noise >= 3 && !state.flags.wary) {
+      state.flags.wary = true;
+      remember(state, 'The goblins are wary. Someone down here is not asleep.');
+    }
+    return w.noise;
+  }
+  function mood(state, id) { return (state.world.npcs[id] || 0); }
+  function befriend(state, id, n = 1) {
+    state.world.npcs[id] = Math.min(3, mood(state, id) + n);
+    return state.world.npcs[id];
+  }
+  function anger(state, id, n = 1) {
+    state.world.npcs[id] = Math.max(-3, mood(state, id) - n);
+    return state.world.npcs[id];
+  }
+  function killed(state, n, who) {
+    const w = state.world;
+    w.dead += n;
+    state.flags.peaceful = false;
+    anger(state, 'goblins', Math.min(3, n * 2));
+    remember(state, `You killed ${who || (n === 1 ? 'a goblin' : n + ' goblins')}. The bakery will remember this.`);
+  }
+  /** Negotiations get harder for every body you left behind. */
+  function bloodPenalty(state) { return Math.min(6, (state.world.dead || 0) * 2); }
+
   /* ---------------- the pie ---------------- */
   /**
    * Pie quality 0-10: what you bring back (ingredients, capped at 6)
@@ -433,6 +476,7 @@
     const ing = id => (state.ingredients[id] || 0) > 0;
     const both = ing('half_office') && ing('half_apartment');
     if (!both) return 'half';
+    if (state.flags.tornRecipe) return 'reopened';
     if (state.flags.goblinPact) return 'goblins';
     if (pieQuality(state) >= 9) return 'perfect';
     return 'gold';
@@ -459,6 +503,7 @@
     startCombat, playerAttack, enemyTurn, combatLog, damageToPC, damageToEnemy, checkCombatEnd,
     setFlag, flag, addClue, hasClue, addItem, hasItem,
     setIngredient, ingredientCount, pieQuality, resolveEnding,
+    remember, noise, mood, befriend, anger, killed, bloodPenalty,
     loadUnlocked, saveUnlocked, ABILITY_KEYS
   };
 });

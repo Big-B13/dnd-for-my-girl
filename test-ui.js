@@ -53,7 +53,7 @@ try {
 const { w, d } = B;
 ok(storyText(d).includes('Country Apple Pie'), 'title screen renders the campaign name');
 ok(storyText(d).includes('Endings discovered'), 'ending gallery renders on the title screen');
-ok(qa(d, '.gal').length === 6, 'all six endings listed as locked');
+ok(qa(d, '.gal').length === 7, 'all seven endings listed as locked');
 ok(q(d, '#sheetInner').textContent.includes('No character yet'), 'sheet placeholder shown before creation');
 
 /* ---------------- 2. character creation ---------------- */

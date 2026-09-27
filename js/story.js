@@ -51,7 +51,7 @@
       chapter: 'Prologue', title: 'The Wizard’s Study',
       onEnter: s => { E.setFlag(s, 'peaceful', s.flags.peaceful !== false); },
       body: () => [
-        P('You were distrustful at first, when the imp appeared at your door to let you into the old wizard’s tower. But inside, you have seen enough benign wonders to settle your nerves: a teapot that pours by itself, a cat that is probably a bookshelf.'),
+        P('You were distrustful at first, when the imp appeared at your door to let you into the old wizard’s tower. But inside, you have seen enough benign wonders to settle your nerves: a teapot that pours by itself, a cat that is probably a bookshelf. The imp — who answers, reluctantly, to <strong>Crimp</strong> — carries your pack the whole way up without being asked and is clearly prepared for this to go unremarked, as it always has.'),
         P('At the top of a long and winding staircase is the study. Bookshelves line the walls. A desk is covered with bubbling potions, mysterious trinkets, and ink-stained scraps of parchment. Behind it, an elderly gnome with long wispy white hair and beard, twinkling eyes, and a large hooked nose very slowly stands up, introduces himself as <strong>Tyndareus the Green</strong>, and pours you a cup of tea.'),
         SAID('Tyndareus', 'When I was a boy, I tasted the most wonderful treat in all the Material Plane. I remember it like it was yesterday. <em>Grammy’s Country Apple Pies…</em> The bakery was near my village, and you could smell the spices all day and night, no matter where you were in town.'),
         SAID('Tyndareus', 'Alas, when I went away to wizard college, the place was overrun by the undead, and no one has dared go back in since. I would taste those heavenly pies just once more before I depart for the Celestial Plane. If I give you a map to the bakery — can you go in, and find me Grammy’s secret recipe?')
@@ -60,10 +60,23 @@
         const c = [];
         if (!s.flags.askedReward) c.push({ label: '“What’s in it for us?”', tag: 'Reward', next: 'reward' });
         if (!s.flags.askedLore) c.push({ label: '“Tell me more about this bakery.”', tag: 'Lore', next: 'lore' });
+        if (!s.flags.crimpKind) c.push({ label: 'Thank the imp properly. Nobody thanks the help.', tag: 'Kindness', next: 'crimp_kind' });
         c.push({ label: '“We’ll bring you the recipe.”', tag: 'Accept', primary: true, next: 'travel' });
         c.push({ label: 'Decline. This is not your problem.', tag: 'Walk away', next: 'decline' });
         return c;
       }
+    },
+
+    crimp_kind: {
+      chapter: 'Prologue', title: 'The Imp Nobody Thanks',
+      onEnter: s => { E.setFlag(s, 'crimpKind'); E.befriend(s, 'crimp', 2); E.remember(s, 'You thanked Crimp the imp by name. Crimp will not forget this.'); },
+      body: () => [
+        P('You turn to the imp — small, leathery, four hundred years of carrying other people’s tea — and thank them properly, and ask their name.'),
+        SAID('Crimp', '…Crimp.'),
+        P('They say it like a word they have not been allowed to use in a very long time. Behind the desk, Tyndareus does not notice, which appears to be normal.'),
+        W('Crimp straightens up one inch. It is the whole of a victory, and you are the only witness.')
+      ],
+      choices: () => [{ label: 'Back to the wizard’s offer', next: 'arrival' }]
     },
 
     reward: {
@@ -165,6 +178,7 @@
 
     trail_after: {
       chapter: 'Chapter 1', title: 'What the Road Keeps',
+      onEnter: s => { E.killed(s, 1, 'a goblin on the road. Word of you is riding ahead.'); },
       body: () => [
         P('You camp with your back to a log and a fire you do not enjoy. Somewhere behind you, the pines keep their own ledger.'),
         W('Word of you is riding ahead, faster than you can.')
@@ -216,6 +230,7 @@
 
     doors_fail: {
       chapter: 'Chapter 2', title: 'Rot and Iron',
+      onEnter: s => { E.noise(s, 2, 'You battered the front doors. Everything inside heard it.'); },
       body: () => [
         P('The wood is rotting but the bar inside holds, and the whole doorframe groans like a complaint. Somewhere inside, something small shouts a question in Goblin.'),
         W('Loud is a choice. There are quieter ways in.')
@@ -228,7 +243,7 @@
 
     doors_fail2: {
       chapter: 'Chapter 2', title: 'Answered in Goblin',
-      onEnter: s => { E.setFlag(s, 'alerted'); },
+      onEnter: s => { E.setFlag(s, 'alerted'); E.noise(s, 2, 'The doorframe cracked. Small feet are running to tell somebody bigger.'); },
       body: () => [
         P('The second shove cracks the frame — and from inside comes the unmistakable sound of small feet running to tell somebody bigger.'),
         W('If there was any surprise to be had, it is gone now.')
@@ -279,6 +294,8 @@
       onEnter: s => {
         E.setFlag(s, 'macFriend');
         E.setIngredient(s, 'apples', 2);
+        E.befriend(s, 'mac', 2);
+        E.remember(s, 'You asked Mac about his orchard like family. He gave you six apples, aimed.');
       },
       body: () => [
         P('You bow, and you ask about the orchard — the blight year, the late frost, which rows are oldest. The scowl stays, but something behind it unknots.'),
@@ -305,6 +322,7 @@
 
     mac_win: {
       chapter: 'Chapter 2', title: 'A Wound in the Orchard',
+      onEnter: s => { E.anger(s, 'mac', 3); E.remember(s, 'You wounded Mac, the oldest tree in the orchard. The orchard will remember.'); },
       body: () => [
         P('You put steel into the old tree and the orchard goes silent in a way that is worse than any noise. Mac does not fall. He simply stops regarding you as a person, and begins regarding you as a season that will pass.'),
         W('The apples on the ground around you rot in an instant, all of them, at once.')
@@ -327,7 +345,8 @@
       body: s => {
         const b = [
           P('The scent of apples is even thicker here. The older trees stand in neat orderly rows, but saplings sprouted since the goblins took over are everywhere. There is a whispering that does not seem to come from just the leaves.'),
-          P('Early-ripened apples litter the ground. As you approach, one of them flies through the air, narrowly missing your head. The whispering is joined by the sound of giggling.')
+          P('Early-ripened apples litter the ground. As you approach, one of them flies through the air, narrowly missing your head. The whispering is joined by the sound of giggling.'),
+          P('Two of the older trees — a red and a green — are having an argument in creaks and groans, and have been recruiting their apples as ammunition.')
         ];
         if (s.flags.dryadFriend) b.push(W('The dryads are watching you the way cats watch a door.'));
         return b;
@@ -337,6 +356,7 @@
         if (!s.flags.dryadFriend) {
           c.push({ label: 'Leave a gift at the nearest trunk and step back', next: 'dryad_gift' });
           c.push({ label: 'Call out, friendly, and ask them to show themselves', tag: 'DC 13 Persuasion', check: { skill: 'persuasion', dc: 13, success: 'dryad_talk', failure: 'dryad_shy' } });
+          c.push({ label: 'Apologize to the trees. Loudly. Sincerely. To trees.', tag: 'Sorry', next: 'orchard_sorry' });
           c.push({ label: 'Kick a sapling out of your way', tag: 'Rude', next: 'dryad_pelt' });
         } else if (!E.hasClue(s, 'recipe_split')) {
           c.push({ label: 'Ask the dryads what they know', tag: 'DC 17', check: { skill: 'persuasion', dc: 17, success: 'dryad_yes', failure: 'dryad_no' } });
@@ -346,9 +366,25 @@
       }
     },
 
+    orchard_sorry: {
+      chapter: 'Chapter 2', title: 'Nobody Ever Says Sorry',
+      onEnter: s => {
+        E.setFlag(s, 'treeFriends');
+        E.setIngredient(s, 'apples', 1);
+        E.befriend(s, 'dryads', 1);
+        E.remember(s, 'You apologized to Barktholomew and Rootilda. They each gave you an apple.');
+      },
+      body: () => [
+        P('You apologize to the trees. Out loud. Sincerely. It turns out nobody — not the goblins, not the zombies, not the decades — has simply said <em>sorry</em> in this orchard before.'),
+        P('The argument stops. The red apple tree, whom the green one addresses as <strong>Barktholomew</strong>, drops one perfect red apple at your feet. The green one — <strong>Rootilda</strong>, apparently — drops a green one beside it, as if the gift were a legal argument she is winning.'),
+        W('Somewhere in the rows, the whispering agrees that you are, provisionally, all right.')
+      ],
+      choices: () => [{ label: 'Pocket the apples, gently', next: 'orchard' }]
+    },
+
     dryad_gift: {
       chapter: 'Chapter 2', title: 'An Offering',
-      onEnter: s => { E.setFlag(s, 'dryadFriend'); },
+      onEnter: s => { E.setFlag(s, 'dryadFriend'); E.befriend(s, 'dryads', 1); E.remember(s, 'The dryads accepted your gift. They do not forget a gift-leaver.'); },
       body: () => [
         P('You leave something of yours at the nearest trunk — no weapon, nothing cruel — and step back. The whispering stops. Then, out of bark and leaf and afternoon light, three shapes unfold.'),
         P('The dryads are mischievous and reclusive, and they look at your gift the way you would look at a drawing a child made of you.'),
@@ -399,7 +435,7 @@
 
     dryad_pelt: {
       chapter: 'Chapter 2', title: 'Half-Rotten Justice',
-      onEnter: s => { hurt(s, E.rollDice('1d4').total, 'bludgeoning'); if (s.pc.hp <= 0) s.pc.hp = 1; },
+      onEnter: s => { hurt(s, E.rollDice('1d4').total, 'bludgeoning'); if (s.pc.hp <= 0) s.pc.hp = 1; E.anger(s, 'dryads', 2); E.remember(s, 'You kicked a sapling. The orchard pelted you, and is keeping score.'); },
       body: () => [
         P('The orchard <em>erupts</em>. Half-rotten apples rain on you with humiliating accuracy until you leave the rows, or the dryads get bored. It is mostly the apples that get bored. You are still there.')
       ],
@@ -489,6 +525,7 @@
 
     dock_spotted: {
       chapter: 'Chapter 3', title: '“Something Funny”',
+      onEnter: s => { E.noise(s, 1, 'A goblin smelled something funny. Namely you.'); },
       body: () => [
         P('One of the goblins stops mid-patrol, sniffs the air with tremendous deliberation, and declares — at volume — that he smells <em>something funny</em>. They come in to investigate, scimitars out, ears enormous.')
       ],
@@ -511,11 +548,21 @@
     dock_fight: {
       chapter: 'Chapter 3', title: 'Dock Skirmish',
       kind: 'combat', enemy: 'goblin',
-      onEnter: s => { E.setFlag(s, 'peaceful', false); },
+      onEnter: s => { E.setFlag(s, 'peaceful', false); E.noise(s, 2, 'Steel rang at the loading dock.'); },
       body: () => [ROLLNOTE(), P('They do not want to instigate this. They also do not want to lose it.')],
-      resolution: { win: 'floor', lose: 'dock_hurt', flee: 'bakery_gate' },
+      resolution: { win: 'dock_win', lose: 'dock_hurt', flee: 'bakery_gate' },
       combatExtras: s => [talkDown(s)],
       choices: () => []
+    },
+
+    dock_win: {
+      chapter: 'Chapter 3', title: 'The Dock Falls Quiet',
+      onEnter: s => { E.killed(s, 1, 'a goblin at the loading dock'); },
+      body: () => [
+        P('It is over quickly and badly. The surviving patrol drags their friend out of sight, and the whole bakery seems to tilt its head toward the sound.'),
+        W('You have made yourself a story they will tell each other. It is not a flattering story.')
+      ],
+      choices: () => [{ label: 'Move into the bakery floor', next: 'floor' }]
     },
 
     dock_hurt: {
@@ -535,11 +582,18 @@
           P('Six long work benches fill the center, covered with pie tins, rolling pins, and baking equipment. Some of the rolling pins are still rolling lazily back and forth, some enchantment keeping them in motion. Dulled knives chop at apples that have not been there in years.'),
           P('On the far side stand six massive ovens, their doors still opening periodically, as if remembering that they are supposed to. The whole place is a mess — not the work of a professional baker. It looks as if someone tried, and failed, to teach themselves to make pie.')
         ];
-        if (s.flags.surprise) b.push(W('The goblins do not know you are here. Yet.'));
+        if (s.flags.surprise && !s.flags.wary && !s.flags.hunting) b.push(W('The goblins do not know you are here. Yet.'));
+        if (s.world.dead > 0) b.push(P('Nobody has moved the dead, and nobody has stopped looking at them. The bakery is quieter than a building full of goblins has any right to be, and every green face that sees you does one of two things: it freezes, or it runs.'));
+        else if (E.mood(s, 'crew') >= 2) b.push(P('Pot-Helmet — an actual cooking pot worn as a helmet, and worn like a crown — waves at you from the rafters with a ladle. Rolling-Pin, self-appointed Assistant Crust Commander, salutes with a rolling pin. You have been, it is decided, <em>the pie person</em>.'));
+        else if (E.mood(s, 'crew') > 0) b.push(P('A goblin on the benches pretends very hard not to recognize you, fails, and nudges a colleague, who also pretends, and also fails.'));
+        if (s.flags.hunting) b.push(P('Patrols sweep this floor on a schedule you could set your heartbeat by. One went past the ovens while you stood here, sniffing the air for the smell of outside.'));
+        else if (s.flags.wary) b.push(P('Something has the goblins jumpy. Conversations die when you move. A sentry has been posted by the glass cabinet, armed with a mallet and doubts.'));
         return b;
       },
       choices: s => {
         const c = [];
+        if (s.flags.hunting && !s.flags.searchDone) c.push({ label: 'A patrol is sweeping this way — get behind the benches', tag: 'DC 13 Stealth', check: { skill: 'stealth', dc: 13, success: 'floor_hide', failure: 'floor_patrol' } });
+        if (s.flags.crewFriend && !s.flags.bakeDone && !s.flags.baking) c.push({ label: 'Roll up your sleeves — it is time to bake with the crew', tag: 'The Bake', next: 'bake_prep' });
         if (!s.flags.doneShop) c.push({ label: '4 — Search the shop out front', tag: 'Shop', next: 'shop' });
         if (!s.flags.doneOffice) c.push({ label: '5 — The front office', tag: 'Office', next: 'office' });
         if (!s.flags.doneGuard) c.push({ label: '6 — The guard room', tag: 'Guard', next: 'guard' });
@@ -550,6 +604,33 @@
         c.push({ label: 'Leave, and make for Trostenwald', tag: 'Finale', next: 'finale_gate' });
         return c;
       }
+    },
+
+    floor_hide: {
+      chapter: 'Chapter 3', title: 'Between the Benches',
+      onEnter: s => { E.setFlag(s, 'searchDone'); },
+      body: () => [
+        P('You fold yourself into the shadow under a work bench. Flour settles on your shoulders like snow. The patrol goes past — boots, sniffs, a muttered argument about whose turn it is to check the ovens — and does not find you.'),
+        W('Your heartbeat does an excellent impression of a war drum for the better part of an hour.')
+      ],
+      choices: () => [{ label: 'Unfold, carefully', next: 'floor' }]
+    },
+
+    floor_patrol: {
+      chapter: 'Chapter 3', title: 'Found',
+      kind: 'combat', enemy: 'goblin',
+      onEnter: s => { E.setFlag(s, 'searchDone'); E.setFlag(s, 'peaceful', false); E.noise(s, 2, 'The hunting patrol found you.'); },
+      body: () => [ROLLNOTE(), P('A pot-helmeted goblin rounds the bench a half-second before you are somewhere else entirely, and the whole bakery hears what happens next.')],
+      resolution: { win: 'floor_patrol_win', lose: 'equipment_lose', flee: 'floor' },
+      combatExtras: s => [talkDown(s)],
+      choices: () => []
+    },
+
+    floor_patrol_win: {
+      chapter: 'Chapter 3', title: 'One Less Sentry',
+      onEnter: s => { E.killed(s, 1, 'a goblin sentry'); },
+      body: () => [P('The floor goes silent in the specific way that means <em>everyone</em> heard. You have bought a little time and a lot of memory.')],
+      choices: () => [{ label: 'Keep moving', next: 'floor' }]
     },
 
     /* ---- 4 shop ---- */
@@ -574,14 +655,21 @@
       ],
       choices: () => [
         { label: 'Pick the lock', tag: 'DC 14 SoH', check: { skill: 'sleight', dc: 14, success: 'shop_loot', failure: 'shop_smash' } },
-        { label: 'Smash it open', tag: 'DC 16 Str', check: { ability: 'str', dc: 16, success: 'shop_loot', failure: 'shop_nada2' } }
+        { label: 'Smash it open', tag: 'DC 16 Str', check: { ability: 'str', dc: 16, success: 'shop_smashed', failure: 'shop_nada2' } }
       ]
     },
 
     shop_smash: {
       chapter: 'Chapter 3', title: 'Fine Fingers Fail',
       body: () => [P('The pick slips and the lock guts itself. Brute force it is, then.')],
-      choices: () => [{ label: 'Smash it open', tag: 'DC 16 Str', check: { ability: 'str', dc: 16, success: 'shop_loot', failure: 'shop_nada2' } }]
+      choices: () => [{ label: 'Smash it open', tag: 'DC 16 Str', check: { ability: 'str', dc: 16, success: 'shop_smashed', failure: 'shop_nada2' } }]
+    },
+
+    shop_smashed: {
+      chapter: 'Chapter 3', title: 'Loud Money',
+      onEnter: s => { E.noise(s, 2, 'You smashed the cashbox open. The crash carried.'); },
+      body: () => [P('The box comes apart like a dropped pie. The crash rolls out through the shop, up the beams, and into the parts of this building where things have ears.')],
+      choices: () => [{ label: 'Scoop up the coins', next: 'shop_loot' }]
     },
 
     shop_loot: {
@@ -693,7 +781,7 @@
           : W('The room tilts for an hour, and your veins feel like somebody else’s.'),
         P('Inside the drawer, torn and folded small: <strong>half of the secret recipe</strong>, on old parchment, in a flour-dusted hand.')
       ],
-      choices: () => [{ label: 'Pocket the half-recipe', next: 'floor' }]
+      choices: s => [{ label: 'Pocket the half-recipe', next: (!s.flags.metGrammy && s.world.dead === 0 && s.flags.peaceful !== false) ? 'grammy' : 'floor' }]
     },
 
     office_half: {
@@ -703,7 +791,164 @@
         P('The spring sighs, disarmed. The drawer glides open, and there it is, torn and folded small: <strong>half of the secret recipe</strong>, on old parchment, in a flour-dusted hand.'),
         W('Somewhere in this building, if the dryads are right, there is a matching half.')
       ],
+      choices: s => [{ label: 'Pocket the half-recipe', next: (!s.flags.metGrammy && s.world.dead === 0 && s.flags.peaceful !== false) ? 'grammy' : 'floor' }]
+    },
+
+    /* ---- Grammy ---- */
+    grammy: {
+      chapter: 'Chapter 3', title: 'The Woman in the Velvet Chair',
+      onEnter: s => { E.setFlag(s, 'metGrammy'); },
+      body: () => [
+        P('You have the drawer half in your hand when the temperature drops by exactly one degree, and the velvet chair behind the desk is no longer empty.'),
+        P('She is not a horror. She is a small, sturdy woman in a flour-dusted apron, faint as a photograph left in a window, with the calm of someone who has been dead a long time and used the time to tidy up. A nameplate on the desk, which you would swear was not there a moment ago, reads <strong>Smithwick</strong>.'),
+        SAID('Grammy Smithwick', 'So. Somebody finally came for it. Sit down — no, not there, that’s the cat’s chair. He’s dead too, but he still has opinions.'),
+        SAID('Grammy Smithwick', 'One question, and I’ll know if you’re lying, because I’m dead, and we get to do that now. <em>What are you going to do with my recipe?</em>')
+      ],
+      choices: () => [
+        { label: 'Tell her the truth: a wizard wants one last taste — and the goblins upstairs want to learn to bake it', tag: 'Truth', next: 'grammy_blessing' },
+        { label: 'Tell her what she wants to hear, and keep the real plan', tag: 'Lie', check: { skill: 'deception', dc: 15, success: 'grammy_fade', failure: 'grammy_caught' } }
+      ]
+    },
+
+    grammy_blessing: {
+      chapter: 'Chapter 3', title: 'The Secret That Isn’t in the Recipe',
+      onEnter: s => {
+        E.setFlag(s, 'grammyBlessing');
+        E.befriend(s, 'grammy', 2);
+        E.addClue(s, 'grammy_secret');
+        E.remember(s, 'Grammy Smithwick blessed you — and told you the secret that isn’t in the recipe.');
+      },
+      body: () => [
+        P('You tell her all of it: the old wizard and his one last taste; the goblins and their obsessive, hopeless, <em>endearing</em> attempts to bake her pie from memory and smell. She listens the way bakers listen — with the hands.'),
+        SAID('Grammy Smithwick', 'Addicts. Huh. Forty years of somebody loving my pie enough to haunt my kitchen over it.'),
+        P('She is quiet for a long moment. Then she leans forward and tells you the thing that is written on neither half of the parchment, in no drawer, in no hand:'),
+        SAID('Grammy Smithwick', 'The secret ingredient was never in the recipe, dear. It’s who you share it with. You take those two halves — and you <em>share</em> them.'),
+        W('The velvet chair is empty again. But the office feels, for the first time since the zombies, like somebody’s kitchen.')
+      ],
+      choices: () => [{ label: 'Pocket the half-recipe, gently', next: 'floor' }]
+    },
+
+    grammy_fade: {
+      chapter: 'Chapter 3', title: 'She Lets You',
+      onEnter: s => { E.setFlag(s, 'grammyFaded'); E.anger(s, 'grammy', 2); E.remember(s, 'You lied to Grammy Smithwick. She let you. Somehow that is worse.'); },
+      body: () => [
+        P('You tell her a pretty lie. She smiles at it the way you smile at a pie that came out wrong but was made with love — and fades back into the velvet chair without another word.'),
+        W('The office is just an office again. You have the parchment now, and none of the rest of it.')
+      ],
       choices: () => [{ label: 'Pocket the half-recipe', next: 'floor' }]
+    },
+
+    grammy_caught: {
+      chapter: 'Chapter 3', title: 'Dead People Get to Do That',
+      onEnter: s => { E.setFlag(s, 'grammyFaded'); E.anger(s, 'grammy', 2); E.remember(s, 'You tried to lie to Grammy Smithwick. She heard every word you meant instead.'); },
+      body: () => [
+        SAID('Grammy Smithwick', 'Oh, honey. I’m <em>dead</em>. We can hear those.'),
+        P('She does not scold. She just looks at you with forty years of patience and none of the patience left for nonsense, and the chair is empty before you can apologize.'),
+        W('You will be thinking about that look for a very long time.')
+      ],
+      choices: () => [{ label: 'Pocket the half-recipe', next: 'floor' }]
+    },
+
+    /* ---- the bake ---- */
+    bake_prep: {
+      chapter: 'Chapter 3', title: 'Trial One — The Organizing',
+      onEnter: s => { E.setFlag(s, 'baking'); },
+      body: () => [
+        P('You tie an apron over your armor and turn baking into a military operation. Flour left. Apples right. Tins in a line. You bark friendly orders — and, to everyone’s astonishment, most of all your own, <em>the goblins fall into formation</em>. Nib on apples. Rolling-Pin on dough, obviously. Pot-Helmet on… whatever Pot-Helmet is doing. Skritch, lanky and paperwork-obsessed, begins keeping a tally on the back of an old pie-box.'),
+        W('The Oven watches. You can feel it watching. Ovens do not have eyes. This one has <em>opinions</em>.')
+      ],
+      choices: () => [
+        { label: 'Run this kitchen like a drill sergeant with a heart', tag: 'DC 12 Athletics', check: { ability: 'str', dc: 12, success: 'bake_magic', failure: 'bake_prep_retry' } }
+      ]
+    },
+
+    bake_prep_retry: {
+      chapter: 'Chapter 3', title: 'Flour Everywhere',
+      body: () => [P('A sack goes over. Flour ghosts through the air like snow in a snow globe somebody shook. Nib sneezes for four solid minutes. But nobody quits — they have come too far, and so have you.')],
+      choices: () => [
+        { label: 'Again — slower, with the crew helping you', tag: 'DC 12 Athletics, advantage', check: { ability: 'str', dc: 12, advantage: true, success: 'bake_magic', failure: 'bake_prep_giveup' } }
+      ]
+    },
+
+    bake_prep_giveup: {
+      chapter: 'Chapter 3', title: 'Not Today',
+      onEnter: s => { E.setFlag(s, 'baking', false); E.remember(s, 'The bake fell apart at the organizing. The crew will try again with you any day.'); },
+      body: () => [P('The kitchen wins. The dough wins. Pot-Helmet, somehow, is in the ceiling. You call it, and the crew disperses with the dignity of people who have seen worse bakes.')],
+      choices: () => [{ label: 'Back to the bakery floor', next: 'floor' }]
+    },
+
+    bake_magic: {
+      chapter: 'Chapter 3', title: 'Trial Two — The Magic',
+      body: () => [
+        P('The Oven said <em>truth</em>, and old magic runs in this building’s bones. The crew watches as you decide what kind of magic a pie needs. Rolling-Pin suggests, by mime, <em>more</em>. Nib suggests, by hiding, that perhaps none.'),
+        W('The runes on the store-room walls are still cold. The rolling pins still roll. This bakery has always been a little enchanted, and it is waiting to see what you add.')
+      ],
+      choices: s => {
+        const c = [];
+        if ((s.pc.cantrips || []).length) c.push({ label: 'Cast a cantrip like autumn leaves drifting through the bakery', next: 'bake_magic_cast' });
+        c.push({ label: 'Work the old enchantment by feel — steady hands, steady heart', tag: 'DC 12 Arcana', check: { skill: 'arcana', dc: 12, success: 'bake_song', failure: 'bake_magic_fizzle' } });
+        return c;
+      }
+    },
+
+    bake_magic_cast: {
+      chapter: 'Chapter 3', title: 'Dancing Lights',
+      onEnter: s => { E.remember(s, 'You lit the bakery with cantrip-light like autumn leaves. The goblins have never seen anything so beautiful.'); },
+      body: () => [
+        P('You cast your smallest spell and give it your biggest heart: lights like autumn leaves, drifting gold and ember-orange through the rafters. The goblins go silent. Nib whispers a word that Skritch later tells you means <em>holy</em>.'),
+        W('The Oven’s coals brighten one degree, which, from an oven, is applause.')
+      ],
+      choices: () => [{ label: 'On to the last trial', next: 'bake_song' }]
+    },
+
+    bake_magic_fizzle: {
+      chapter: 'Chapter 3', title: 'A Fizzle and a Giggle',
+      body: () => [P('The enchantment hiccups, sparks like a wet sneeze, and a single rolling pin rolls in a perfect, mocking circle. The goblins lose their entire composure. You laugh too, eventually, which counts for something.')],
+      choices: () => [{ label: 'Shake it off — the song is what matters', next: 'bake_song' }]
+    },
+
+    bake_song: {
+      chapter: 'Chapter 3', title: 'Trial Three — The Song',
+      body: () => [
+        P('The Oven said <em>song</em>. So you sing — an old song, the kind that travels with soldiers and sailors and anyone who has ever been far from a kitchen: a song about how the people you eat with matter more than the meal.'),
+        P('One by one the goblins creep in: from the rafters, the store rooms, the stair. Nib joins first, because Nib joins everything. Then Rolling-Pin, keeping time with a rolling pin. Then — a moment you will tell for the rest of your life — <strong>Chief Grubnash himself</strong>, in the doorway, wooden spoon raised like a scepter, singing words he has never heard before as if he wrote them.')
+      ],
+      choices: s => [
+        { label: 'Sing it like you mean it',
+          tag: s.world.dead === 0 && E.mood(s, 'crew') >= 2 ? 'DC 13 Performance — the crew sings with you (advantage)' : 'DC 13 Performance',
+          check: { skill: 'performance', dc: 13, advantage: s.world.dead === 0 && E.mood(s, 'crew') >= 2, success: 'bake_done', failure: 'bake_song_retry' } }
+      ]
+    },
+
+    bake_song_retry: {
+      chapter: 'Chapter 3', title: 'The Song Wobbles',
+      body: () => [P('Your voice cracks on the third verse and the moment wobbles with it — but Pot-Helmet, bless the little maniac, bangs the pot on a bench until the beat comes back, and the crew carries you through the last line together.')],
+      choices: () => [
+        { label: 'One more time — together', tag: 'DC 13 Performance, advantage', check: { skill: 'performance', dc: 13, advantage: true, success: 'bake_done', failure: 'bake_song_giveup' } }
+      ]
+    },
+
+    bake_song_giveup: {
+      chapter: 'Chapter 3', title: 'Almost',
+      onEnter: s => { E.setFlag(s, 'baking', false); E.remember(s, 'The song fell apart on the last verse. The pies came out all right. The magic did not.'); },
+      body: () => [P('The song peters out. The pies bake anyway — honest, good, ordinary pies. The Oven says nothing at all, which is somehow the saddest sound in the world.')],
+      choices: () => [{ label: 'Back to the bakery floor', next: 'floor' }]
+    },
+
+    bake_done: {
+      chapter: 'Chapter 3', title: 'SHARE',
+      onEnter: s => {
+        E.setFlag(s, 'bakeDone'); E.setFlag(s, 'baking', false);
+        E.befriend(s, 'crew', 1); E.befriend(s, 'oven', 2);
+        E.remember(s, 'The bake succeeded. The pies rose. The Oven said: SHARE.');
+      },
+      body: () => [
+        P('The pies rise. All of them. At once. Through the little glass windows in the oven doors the crusts go gold like a sunset that decided to be edible, and the smell — the <em>smell</em> — rolls out of the bakery and across the ruined village for the first time in forty years.'),
+        P('The goblins stand in a row, covered in flour, weeping openly, holding pie. The Oven glows from every door at once and delivers its verdict in a single rumbling word:'),
+        SAID('The Oven', 'SHARE.'),
+        W('Somewhere out back, you would swear you hear an old tree laugh. The secret ingredient, it turns out, was never in the recipe.')
+      ],
+      choices: () => [{ label: 'Eat pie with the crew. Obviously.', next: 'floor' }]
     },
 
     /* ---- 6 guard ---- */
@@ -726,7 +971,14 @@
     guard_smash: {
       chapter: 'Chapter 3', title: 'The Lock Stands',
       body: () => [P('The pick mangles the keyway. The chest, like its owner’s era, does not open for asking.')],
-      choices: () => [{ label: 'Smash the lock off', tag: 'DC 17 Str', check: { ability: 'str', dc: 17, success: 'guard_chest', failure: 'guard_nochest' } }]
+      choices: () => [{ label: 'Smash the lock off', tag: 'DC 17 Str', check: { ability: 'str', dc: 17, success: 'guard_smashed', failure: 'guard_nochest' } }]
+    },
+
+    guard_smashed: {
+      chapter: 'Chapter 3', title: 'A Bang for the Rafters',
+      onEnter: s => { E.noise(s, 2, 'You smashed the guard-room chest open.'); },
+      body: () => [P('The lock comes off with a bang the rafters will discuss for a week.')],
+      choices: () => [{ label: 'Look inside', next: 'guard_chest' }]
     },
 
     guard_chest: {
@@ -803,7 +1055,7 @@
       body: () => [
         P('Up close, the enchantment is old and kind and a little confused: rolling pins rolling at apples that are not there, knives dulled to spoons by decades of chopping. The magic equipment might fetch a few coppers as a curio for some interested wizard; otherwise it is poor condition, eaten through with rust and rot.'),
         W('A “Mending” cantrip might fix the physical damage. It cannot restore the magic. You reach out to touch a rolling pin—'),
-        P('—and three goblins drop down from the rafters to stop you.')
+        P('—and three goblins drop from the rafters to stop you: one wearing an actual cooking pot as a helmet (<strong>Pot-Helmet</strong>, chaos incarnate), one holding a rolling pin like a commissioned officer (<strong>Rolling-Pin</strong>, self-appointed Assistant Crust Commander), and one small, careful one who lands badly and apologizes to the floor (<strong>Nib</strong>).')
       ],
       choices: () => [
         { label: '“Easy. I’ll show you the recipe.”', tag: 'DC 14 Cha', check: { ability: 'cha', dc: 14, success: 'equipment_talk', failure: 'equipment_fight' } },
@@ -814,8 +1066,10 @@
 
     equipment_talk: {
       chapter: 'Chapter 3', title: 'Shown, Not Told',
+      onEnter: s => { E.setFlag(s, 'crewFriend'); E.befriend(s, 'crew', 2); E.remember(s, 'You showed the crew the shapes of pie. They will remember you as the pie person.'); },
       body: () => [
         P('They cannot read, but they remember what they are told and what they are shown. You mime flour, and apples, and a lattice, and the word “pie”, and the three of them go very still, and then very excited, and then — decisively — not hostile.'),
+        P('Nib asks, in goblin, whether you will be <em>staying for the bake</em>. Pot-Helmet has already begun rearranging the benches into something like a kitchen brigade.'),
         W('They are addicted. They will let you take the recipe. They will remember, forever, whether you shared the pie.')
       ],
       choices: () => [{ label: 'Back to the bakery floor', next: 'floor' }]
@@ -824,11 +1078,21 @@
     equipment_fight: {
       chapter: 'Chapter 3', title: 'Raiders from the Rafters',
       kind: 'combat', enemy: 'goblinTrio',
-      onEnter: s => { E.setFlag(s, 'peaceful', false); },
+      onEnter: s => { E.setFlag(s, 'peaceful', false); E.noise(s, 3, 'There was a fight among the enchanted benches.'); },
       body: () => [ROLLNOTE(), P('They do not wish to instigate this. They also will not let you touch the machines that make the smell.')],
-      resolution: { win: 'floor', lose: 'equipment_lose', flee: 'floor' },
+      resolution: { win: 'equipment_win', lose: 'equipment_lose', flee: 'floor' },
       combatExtras: s => [talkDown(s)],
       choices: () => []
+    },
+
+    equipment_win: {
+      chapter: 'Chapter 3', title: 'The Crew Falls Quiet',
+      onEnter: s => { E.killed(s, 3, 'Pot-Helmet, Rolling-Pin and Nib'); },
+      body: () => [
+        P('The rafters do not cheer. The rafters have gone entirely silent, which is worse. Somewhere upstairs, something heavy stands up.'),
+        W('You will meet the chief eventually. He has been told exactly what you are.')
+      ],
+      choices: () => [{ label: 'Stand in the quiet a moment, then move on', next: 'floor' }]
     },
 
     equipment_lose: {
@@ -843,21 +1107,44 @@
       onEnter: s => { E.setFlag(s, 'doneOven'); s.flags.ovenRoll = E.d(4); },
       body: s => {
         const who = ['', 'a magmin, dozing in the coals like a cat', 'a smoke mephit, puffing little grievances at the flue', 'a magma mephit, sunbathing on the oven floor', 'a fire snake, coiled around the bread stone like a belt'][s.flags.ovenRoll];
-        return [
-          P('The ovens are still warm but not hot — certainly not hot enough to bake a pie, as the half-baked messes in the tins on top attest. The warmth is not magic. It is <em>residence</em>: ' + who + '.'),
-          W('It is comfortable. It does not attack unless provoked. The ovens are very conveniently hospitable, and it intends to keep them.')
+        const b = [
+          P('The ovens are still warm but not hot — certainly not hot enough to bake a pie, as the half-baked messes in the tins on top attest. The warmth is not magic. It is <em>residence</em>: ' + who + '.')
         ];
+        if (s.flags.bakeDone) b.push(P('The great oven at the center glows like a contented cat in a sunbeam. It has said its piece. It is, for the first time in forty years, <em>full</em>.'));
+        else if (s.flags.ovenSpoke) b.push(P('The great oven at the center waits, the way very old things wait, having already said every word it needed to say.'));
+        else b.push(
+          P('And then the great oven at the center of the row — older than the building, older, you would bet, than the village — opens its door on its own. From somewhere deep in its fireless dark, a voice like a millstone turning over in its sleep says a single word:'),
+          SAID('The Oven', 'APPLES.')
+        );
+        return b;
       },
-      choices: () => [
-        { label: 'Leave it its hearth', next: 'floor' },
-        { label: 'Prod it — this is not its house', tag: 'Provoke', next: 'oven_fight' }
-      ]
+      choices: s => {
+        const c = [];
+        if (!s.flags.ovenSpoke) c.push({ label: '“…Hello?”', tag: 'The Oven', next: 'oven_word' });
+        c.push({ label: 'Leave it its hearth', next: 'floor' });
+        if (!s.flags.ovenProvoked) c.push({ label: 'Prod it — this is not its house', tag: 'Provoke', next: 'oven_fight' });
+        return c;
+      }
+    },
+
+    oven_word: {
+      chapter: 'Chapter 3', title: 'It Speaks in Single Words',
+      onEnter: s => { E.setFlag(s, 'ovenSpoke'); E.befriend(s, 'oven', 1); E.remember(s, 'The great Oven spoke to you. One word at a time. It meant all of it.'); },
+      body: () => [
+        SAID('The Oven', 'APPLES.'),
+        P('You wait. A minute passes, in the manner of ovens.'),
+        SAID('The Oven', 'SONG.'),
+        P('You wait longer. The coals rearrange themselves into something almost like a face, almost like a shrug.'),
+        SAID('The Oven', 'TRUTH.'),
+        W('It is asking for three things. It has been asking — in heat, and smoke, and forty years of half-baked messes — and nobody could hear it.')
+      ],
+      choices: () => [{ label: 'Promise, solemnly, to try', next: 'floor' }]
     },
 
     oven_fight: {
       chapter: 'Chapter 3', title: 'Provoked',
       kind: 'combat', enemy: 'oven',
-      onEnter: s => { E.setFlag(s, 'peaceful', false); },
+      onEnter: s => { E.setFlag(s, 'peaceful', false); E.setFlag(s, 'ovenProvoked'); E.anger(s, 'oven', 2); E.remember(s, 'You provoked the dweller of the warm ovens.'); },
       body: () => [ROLLNOTE(), P('It wanted, so badly, to just be warm.')],
       resolution: { win: 'floor', lose: 'oven_lose', flee: 'floor' },
       combatExtras: s => [talkDown(s, 'You step back from the oven door with both hands up. The dweller settles, and forgives you nothing.')],
@@ -875,15 +1162,22 @@
     apartment: {
       chapter: 'Chapter 3', title: '9 — Grammy’s Apartment',
       onEnter: s => { E.setFlag(s, 'doneApartment'); },
-      body: () => [
-        P('This once-homey apartment has been turned into a true goblin hovel. Two goblins and their leader stand in the middle of the room, staring at you. Ancient mahogany furniture still stands, too heavy for the goblins to move: a bed missing its mattress in one corner, a wardrobe now filled with crude weapons in the other.'),
-        P('Against one wall is a desk, covered in animal pelts and hunting trophies. One of its drawers sits a half-inch proud.'),
-        W('The chief’s nose is twitching. You smell, to a goblin, like the outside — and like somebody who has been near the pie machines.')
-      ],
+      body: s => {
+        const b = [
+          P('This once-homey apartment has been turned into a true goblin hovel. Two goblins and their leader stand in the middle of the room, staring at you. The leader is unmistakable: a flour-dusted apron over scavenged leather, a chef’s hat worn like a crown, a necklace of measuring spoons, and a wooden spoon held exactly the way kings hold scepters. <strong>Chief Grubnash.</strong> The goblins who took Grammy’s bakery have a <em>baker</em>.'),
+          P('Ancient mahogany furniture still stands, too heavy to move: a bed missing its mattress in one corner, a wardrobe of crude weapons in the other. Against one wall, a desk covered in pelts and trophies — one drawer sitting a half-inch proud.'),
+          W('The chief’s nose is twitching. You smell, to a goblin, like the outside — and like somebody who has been near the pie machines.')
+        ];
+        if (s.world.dead > 0) b.push(P('Grubnash’s eyes go to his guards, then to you, then to the wooden spoon in his hand. He has been told exactly what you are. The measuring spoons on his chest do not rattle, because he is holding very, very still.'));
+        else if (s.flags.crewFriend) b.push(P('Pot-Helmet has clearly been up this stair at speed, because Grubnash looks at you the way a head chef looks at a visiting master: wary, hopeful, and slightly out of his depth.'));
+        return b;
+      },
       choices: s => {
         const c = [];
         if (!s.flags.aptDone) {
-          c.push({ label: 'Talk. Slowly. About pie.', tag: 'DC 14 Cha', check: { ability: 'cha', dc: 14, success: 'apartment_talk', failure: 'apartment_fight' } });
+          c.push({ label: 'Talk. Slowly. About pie.',
+            tag: s.world.dead > 0 ? 'DC ' + (14 + E.bloodPenalty(s)) + ' Cha — they know what you are' : 'DC 14 Cha',
+            check: { ability: 'cha', dc: 14 + E.bloodPenalty(s), success: 'apartment_talk', failure: 'apartment_fight' } });
           c.push({ label: 'Fight the chief', tag: 'Fight', next: 'apartment_fight' });
           c.push({ label: 'Feint left, slip to the desk', tag: 'DC 13 Stealth', check: { skill: 'stealth', dc: 13, success: 'apartment_sneak', failure: 'apartment_fight' } });
         }
@@ -906,7 +1200,7 @@
 
     apartment_deal: {
       chapter: 'Chapter 3', title: 'Pie for Everyone',
-      onEnter: s => { E.setFlag(s, 'goblinPact'); E.setFlag(s, 'aptDone'); },
+      onEnter: s => { E.setFlag(s, 'goblinPact'); E.setFlag(s, 'aptDone'); E.setFlag(s, 'crewFriend'); E.befriend(s, 'crew', 2); E.remember(s, 'You promised Grubnash’s crew their own copy of the recipe. Goblins never forget a promise.'); },
       body: () => [
         P('You say the words — <em>a copy, in your own words, for the bakery’s new bakers</em> — and the room goes silent in a way churches do. The chief repeats it back to you, twice, to lock it in.'),
         W('Goblins have long memories. This one will outlive you both. They step aside from the desk, all three of them, like ushers.')
@@ -935,7 +1229,7 @@
     apartment_fight: {
       chapter: 'Chapter 3', title: 'The Chief',
       kind: 'combat', enemy: 'goblinChief',
-      onEnter: s => { E.setFlag(s, 'peaceful', false); E.setFlag(s, 'aptDone'); },
+      onEnter: s => { E.setFlag(s, 'peaceful', false); E.setFlag(s, 'aptDone'); E.noise(s, 3, 'There was a fight in Grammy’s apartment.'); },
       body: () => [ROLLNOTE(), P('The two under-goblins form a very committed audience. The chief fights the way an addict defends a pantry.')],
       resolution: { win: 'apartment_win', lose: 'apartment_lose', flee: 'floor' },
       combatExtras: s => [talkDown(s)],
@@ -944,8 +1238,10 @@
 
     apartment_win: {
       chapter: 'Chapter 3', title: 'The Hovel Falls Quiet',
+      onEnter: s => { E.killed(s, 1, 'Chief Grubnash'); },
       body: () => [
-        P('The chief goes down and the two under-goblins surrender the room with a speed that suggests they had been hoping someone would resolve this for them. They sit in the wardrobe and watch you with enormous ears.')
+        P('The chief goes down, wooden spoon and all, and the two under-goblins surrender the room with a speed that suggests they had been hoping someone would resolve this for them. They sit in the wardrobe and watch you with enormous ears.'),
+        W('They will not meet your eyes. Somewhere in this building, a pot-helmeted goblin is being told, gently, that the pie person is not coming back up the stair.')
       ],
       choices: () => [{ label: 'Open the proud drawer', next: 'apartment_drawer' }]
     },
@@ -1024,9 +1320,31 @@
           : P('He reads what you brought, and the light comes up in his face — and stops, halfway, like a sunrise interrupted. <em>“This is only half,”</em> he says, gently, the way you would tell a child the moon is not, in fact, a pie.')
       ],
       choices: s => {
+        const c = [];
+        const both = (s.ingredients.half_office || 0) > 0 && (s.ingredients.half_apartment || 0) > 0;
+        if (both && s.flags.bakeDone && s.flags.grammyBlessing && s.flags.goblinPact && s.world.dead === 0) {
+          c.push({ label: 'Tear up the recipe.', tag: 'The Promise', primary: true, next: 'finale_torn' });
+        }
         const id = s.flags.endingId || E.resolveEnding(s);
-        return [{ label: '➤ And then…', primary: true, next: 'ending_' + id }];
+        c.push({ label: '➤ And then…', primary: c.length === 0, next: 'ending_' + id });
+        return c;
       }
+    },
+
+    finale_torn: {
+      chapter: 'Finale', title: 'The Promise',
+      onEnter: s => { s.flags.tornRecipe = true; s.flags.endingId = 'reopened'; },
+      body: s => [
+        P('Tyndareus’s hands are already outstretched for the parchment when you do the thing you rehearsed on every mile of the road back. You tear it. Cleanly — twice, four times — until Grammy’s secret recipe is confetti in an old wizard’s study.'),
+        P('Crimp makes a sound like a kettle dropped from a shelf.'),
+        SAID('Tyndareus', '…What have you <em>done</em>?'),
+        s.flags.crimpKind
+          ? P('Crimp looks at you. You look at Crimp. And Crimp — nobody’s favorite, always overlooked, four hundred years of carrying other people’s tea — very quietly sets down the tray, and stands beside you.')
+          : P('Crimp freezes halfway to picking up the pieces, looks at your face, and — for the first time in four hundred years — decides to wait and see.'),
+        SAID('You', 'If you ever really want to find this pie again, you go with me to the bakery in the morning. The recipe lives there. So does the woman who wrote it. So does everybody who kept it alive.'),
+        SAID('You', 'Maybe not everyone that you knew is here anymore. But don’t forget about the people you do have around you.')
+      ],
+      choices: () => [{ label: '➤ And then…', primary: true, next: 'ending_reopened' }]
     },
 
     /* ================= ENDINGS ================= */
@@ -1077,6 +1395,26 @@
       choices: () => [{ label: '🎲 Play again — different choices, different ending', tag: 'Restart', next: '__restart' }]
     },
 
+    ending_reopened: {
+      chapter: 'Finale', title: 'Grammy’s Bakery, Reopened',
+      onEnter: s => {
+        s.flags.endingId = 'reopened';
+        s.flags.tornRecipe = true;
+        E.levelUp(s);
+        E.remember(s, 'You reopened Grammy’s Bakery. They call you the one who brought the smell back.');
+      },
+      body: s => [
+        STARS(E.pieQuality(s)),
+        P('In the morning, to everybody’s astonishment — most of all his own — Tyndareus the Green comes. He is dressed for a journey he has not taken in sixty years. Crimp carries the satchel and walks one step ahead, like a guide, like a <em>somebody</em>.'),
+        P('The goblins meet the old wizard at the door in a row, flour to their elbows, terrified, magnificent. Grubnash shakes his hand with both hands. The Oven says <strong>“WELCOME”</strong> — two whole syllables, a personal record — and the pies come out of it golden, on schedule, for the first time in forty years.'),
+        P('The first slice does not go to the wizard. It goes to <strong>Crimp</strong> — because nobody has ever given Crimp anything, and you would like the record to show that it happened on your watch. The second goes to Tyndareus, who takes one bite, sits down very slowly on a bench, and is quiet for a while, in the good way.'),
+        P('You do not take the recipe, because the recipe was never the point. Grammy Smithwick leans in the office doorway with her arms folded and the smug, shining satisfaction of a woman whose kitchen is <em>working</em>. Mac sends six apples up the road with a sapling that follows you home like a dog. And somewhere in the ruined village, the smell comes back — spices, all day and night, no matter where you stand.'),
+        P('They give you 25 gold, which is everything the till has, and free pie at Grammy’s forever, and a new name that will follow you the rest of your life: <strong>the one who reopened Grammy’s Bakery</strong>.'),
+        W('You are level 2. You have a family now: a crew, an imp, an ancient wizard, a ghost with standards, and one very contented Oven. The real secret ingredient was never in the recipe.')
+      ],
+      choices: () => [{ label: '🎲 Play again — different choices, different ending', tag: 'Restart', next: '__restart' }]
+    },
+
     ending_quit: {
       chapter: 'Finale', title: 'The Pie-Less Fate',
       onEnter: s => { s.flags.endingId = 'quit'; },
@@ -1107,7 +1445,7 @@
       body: () => [
         P('A one-session <strong>Dungeons &amp; Dragons</strong> adventure, faithful to the one-shot by Jennifer Adcock. An ancient gnome wizard wants one last taste of the best pie in the world. The bakery is ruined. The orchard is watching. The goblins are <em>addicted</em>.'),
         P('You will build a level 1 character — species, class, origin, look, skills — and every choice you make will change the numbers on your sheet and the ending you get.'),
-        W('Real dice. Real modifiers. Real consequences. Every fight is avoidable. There are six endings, and one of them is very hard to find.')
+        W('Real dice. Real modifiers. Real consequences. Every fight is avoidable — and everything you do is <em>remembered</em>. There are seven endings, and the truest one is very hard to find.')
       ],
       choices: () => [{ label: '🎲 Begin character creation', tag: 'Start', primary: true, next: '__create' }]
     }

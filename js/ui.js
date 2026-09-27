@@ -199,6 +199,11 @@
       h += `<h3>The Pie</h3><div class="hp-num" style="text-align:left;font-size:.85rem">Quality so far: <strong>${E.pieQuality(state)} / 10</strong></div>`;
     }
 
+    if (state.world && state.world.events.length) {
+      h += `<h3>The World Remembers</h3><div class="hp-num" style="text-align:left;font-size:.76rem;line-height:1.55">` +
+        state.world.events.slice(-7).map(t => `• ${esc(t)}`).join('<br>') + `</div>`;
+    }
+
     h += `<h3>Tally</h3><div class="hp-num" style="text-align:left;font-size:.8rem;line-height:1.7">
       Checks made: ${state.stats.checks}<br>
       Passed: ${state.stats.passed} · Crits: ${state.stats.crits} · Fumbles: ${state.stats.fumbles}<br>
@@ -212,7 +217,7 @@
     return map[id] || id;
   }
   function clueLabel(id) {
-    const map = { mac_hint: 'Mac remembers the dryads', recipe_split: 'The recipe is in two halves', dock_hint: 'The dock is the quiet way in' };
+    const map = { mac_hint: 'Mac remembers the dryads', recipe_split: 'The recipe is in two halves', dock_hint: 'The dock is the quiet way in', grammy_secret: 'The secret that isn’t in the recipe' };
     return map[id] || id;
   }
 
@@ -464,6 +469,7 @@
     if (!S.getNode(id)) { console.warn('missing node', id); return; }
     state.node = id;
     if (!state.seen.includes(id)) state.seen.push(id);
+    if (state.world) state.world.turns++;
     // record the ending in the permanent gallery
     if (id.startsWith('ending_')) unlockEnding(id.slice(7));
     renderNode(id);
@@ -970,7 +976,7 @@
 
     $story.appendChild(el('div', 'chapter', 'A one-session Dungeons & Dragons adventure'));
     $story.appendChild(el('h1', '', 'Grammy’s <span class="accent">Country Apple Pie</span>'));
-    $story.appendChild(el('p', 'subtitle', 'One ancient wizard. One ruined bakery. Six ways this ends.'));
+    $story.appendChild(el('p', 'subtitle', 'One ancient wizard. One ruined bakery. Seven ways this ends.'));
     $story.appendChild(el('div', 'rule'));
     $story.appendChild(el('p', '', 'When the ancient wizard Tyndareus of Trostenwald develops a craving for a treat from his childhood, he will stop at nothing to get his hands on the best apple pie in the whole world. He hires you to find the bakery that once made it.'));
     $story.appendChild(el('p', '', 'The bakery has long since been overrun — first by the undead, then by something smaller, louder and greener. The recipe is hidden in two halves. The orchard is watching. And all is not as it seems at Grammy’s Bakery.'));

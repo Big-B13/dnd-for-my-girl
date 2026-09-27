@@ -299,8 +299,8 @@
       speed: 30, note: 'Nimble Escape: it slips away easily. It does not want to die over a bakery.'
     },
     goblinTrio: {
-      name: 'Goblin Raiders (3)', icon: '👺', ac: 15, hp: 21, atk: 4, dmg: '1d6+2', dmgType: 'slashing',
-      speed: 30, note: 'Three addicts defending their pie supply. They will not instigate — but they will not step aside.'
+      name: 'Grubnash’s Crew (3)', icon: '👺', ac: 15, hp: 21, atk: 4, dmg: '1d6+2', dmgType: 'slashing',
+      speed: 30, note: 'Pot-Helmet, Rolling-Pin and Nib, defending their pie supply. They will not instigate — but they will not step aside.'
     },
     goblinChief: {
       name: 'The Goblin Chief', icon: '👑', ac: 15, hp: 18, atk: 4, dmg: '1d6+2', dmgType: 'slashing',
@@ -331,6 +331,7 @@
 
   /* ---------- endings ---------- */
   const ENDINGS = [
+    { id: 'reopened', name: 'Grammy’s Bakery, Reopened', icon: '🏠', rarity: 'True ending', desc: 'You tore up the recipe and gave the old wizard something better: a place to come back to. The goblins are bakers now. The first slice went to Crimp.' },
     { id: 'perfect', name: 'The Best Pie in the World', icon: '🥇', rarity: 'Secret ending', desc: 'The whole recipe, brought back in peace, with every spice. A thousand gold, a Bag of Tricks, and the pie itself.' },
     { id: 'gold', name: 'A Thousand Gold', icon: '💰', rarity: 'Great ending', desc: 'The recipe delivered — but not in peace. Paid in full, no bonus, and the goblins have long memories.' },
     { id: 'goblins', name: 'Pie for Everyone', icon: '🤝', rarity: 'Bittersweet ending', desc: 'You kept your word to the goblins. The wizard has his pie; the bakery has new bakers.' },
